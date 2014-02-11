@@ -1,7 +1,8 @@
 <?php
-	//require("Messages/TextMessage.php");
+	echo(ini_get("include_path"));
+	echo("<br>");
 
-	require_once("/common.php");
+	require_once("global.php");
 	require_once(MESSAGES_MODULE_PATH . "include.php");
 	require_once(HANDLERS_MODULE_PATH . "include.php");
 
@@ -18,7 +19,7 @@
 
 	$xmlString = "<xml>
 				<ToUserName><![CDATA[toUser]]></ToUserName>
-				<FromUserName><![CDATA[xuyingchun]]></FromUserName>
+				<FromUserName><![CDATA[waklin]]></FromUserName>
 				<CreateTime>123456789</CreateTime>
 				<MsgType><![CDATA[event]]></MsgType>
 				<Event><![CDATA[subscribe]]></Event>

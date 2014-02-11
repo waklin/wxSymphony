@@ -1,5 +1,5 @@
 <?php
-	require_once("/common.php");
+	require_once("global.php");
 
 	require(MESSAGES_MODULE_PATH . "common.php");
 	require(MESSAGES_MODULE_PATH . "Semaphore.php");

@@ -48,8 +48,11 @@
 	{
 		public $MsgId;
 
-		abstract public function generateContent();
-		abstract public function getTemplate();
+		//abstract public function generateContent();
+		//abstract public function getTemplate();
+		// bae environment don't support above code.
+		public function generateContent(){;}
+		public function getTemplate(){;}
 
 		protected function readPlusNode($simpleXml)
 		{

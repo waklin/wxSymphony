@@ -1,5 +1,5 @@
 <?php
-	require_once("/common.php");
+	require_once("global.php");
 
 	require_once(HANDLERS_MODULE_PATH . "IHandler.php");
 	require_once(HANDLERS_MODULE_PATH . "Handler/TextHandler.php");

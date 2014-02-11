@@ -9,7 +9,7 @@
 
 	class HandlerFactory
 	{
-		static function CreateHandler($requestString)
+		static function createHandler($requestString)
 		{
 			$result = null;
 

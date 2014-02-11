@@ -20,21 +20,23 @@
 			if ($simpleXml->Event == EVENTTYPE_SUBSCRIBE_TAG ||
 				$simpleXml->Event == EVENTTYPE_UNSUBSCRIBE_TAG)
 			{
-				$requestEvent = SubscribeEvent::loadFromXml("SubscribeEvent", $this->_requestString);
+				$requestEvent = Semaphore::loadFromXml("SubscribeEvent", $this->_requestString);
 
-				$responseMessage = new TextMessage();
-				$responseMessage->FromUserName = "wxSymphony";
-				$responseMessage->ToUserName = $requestEvent->FromUserName;
+				$responseMsg = new TextMessage();
+
+				$temp = $requestEvent->ToUserName;
+				$responseMsg->ToUserName = $requestEvent->FromUserName;
+				$responseMsg->FromUserName = $temp;
 
 				if ($requestEvent->Event == EVENTTYPE_UNSUBSCRIBE_TAG)
-					$responseMessage->Content = "goodbye!";
+					$responseMsg->Content = "goodbye!";
 				else
-					$responseMessage->Content = "welcom join!";
+					$responseMsg->Content = "welcome join!";
 
-				$responseMessage->CreateTime = date("Y-m-d H:i:s", time());
-				$responseMessage->MsgId = 0;
+				$responseMsg->CreateTime = date("Y-m-d H:i:s", time());
+				$responseMsg->MsgId = 0;
 
-				return $responseMessage; 
+				$result = $responseMsg->generateContent();
 			}
 
 			return $result;

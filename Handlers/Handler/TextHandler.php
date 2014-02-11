@@ -13,14 +13,14 @@
 
 		public function handleRequest()
 		{
-			$textMessage = TextMessage::loadFromXml("TextMessage", $this->_requestString);
+			$textMessage = Semaphore::loadFromXml("TextMessage", $this->_requestString);
 
-			$textMessage->ToUserName = "xyc";
-			$textMessage->FromUserName = "gl";
+			$temp = $textMessage->ToUserName;
+			$textMessage->ToUserName = $textMessage->FromUserName;
+			$textMessage->FromUserName = $temp;
 			$textMessage->Content = "i love you too!";
 
-			//return $textMessage->generateContent();
-			return $textMessage;
+			return $textMessage->generateContent();
 		}
 	}
 ?>

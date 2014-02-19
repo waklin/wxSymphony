@@ -75,4 +75,31 @@
 		}
 
 	}
+
+	class Sqlite3Access
+	{
+		private $_dbFileName;
+		private $_connect;
+
+		function __construct($dbFileName) {
+			$this->_dbFileName= $dbFileName;
+		}
+
+		public function connect() {
+			$this->_connect = sqlite_open($this->_dbFileName);
+		}
+
+		public function disConnect() {
+
+			sqlite_close($this->_connect);
+		}
+
+		public function execSql($sql) {
+			$this->_connect->query($sql);
+		}
+
+		public function fetchAll($sqlResult) {
+			return $sqlResult->fetchAll(SQLITE_ASSOC);
+		}
+	}
 ?>

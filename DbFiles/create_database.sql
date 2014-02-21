@@ -98,9 +98,9 @@ CREATE TABLE `stations` (
 )ENGINE=InnoDB
 AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
 
-insert company values(0, '未知');
+insert company values(0, '鏈煡');
 
-insert into city(id, name) VALUES(0, '未知');
-insert into city(name) VALUES('北京');
-insert into city(name) VALUES('上海');
-insert into city(name) VALUES('广州');
+insert into city(id, name) VALUES(0, '鏈煡');
+insert into city(name) VALUES('鍖椾含');
+insert into city(name) VALUES('涓婃捣');
+insert into city(name) VALUES('娣卞湷');

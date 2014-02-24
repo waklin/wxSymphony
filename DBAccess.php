@@ -3,7 +3,7 @@
 
 	class DBAccess
 	{
-		private $_connect = false;
+		private $_mysqli = false;
 
 		private $_host;
 		private $_port;
@@ -25,7 +25,7 @@
 			$DB_PORT = 3306;
 			$DB_USER = 'root';
 			$DB_PWD = '811225';
-			$DB_DBNAME = 'symphony';
+			$DB_DBNAME = 'new_db';
 
 			if (defined("DEPLOY_BAE")) 
 			{
@@ -45,61 +45,36 @@
 		}
 
 		public function connect() {
-			if (!$this->_connect) {
-				echo(sprintf("host=%s, userName=%s, password = %s<br/>", 
-							$this->_host,
-							$this->_userName,
-							$this->_password));
-				$this->_connect = mysql_connect($this->_host . ":" . $this->_port, $this->_userName, $this->_password);
+			if (!$this->_mysqli) {
 
-				if (!$this->_connect){
-					die(__FUNCTION__ . __LINE__ . mysql_error());
-				}
+				//echo(sprintf("host=%s, port=%s, userName=%s, password = %s, dbname=%s<br/>", 
+							//$this->_host,
+                            //$this->_port,
+							//$this->_userName,
+							//$this->_password,
+                            //$this->_dbName));
 
-				if (!mysql_select_db($this->_dbName, $this->_connect)){
-					die(__FUNCTION__ . __LINE__ . mysql_error());
+				$this->_mysqli = new mysqli($this->_host,
+					$this->_userName, 
+					$this->_password, 
+					$this->_dbName,
+					$this->_port);
+
+				if ($this->_mysqli->connect_error) {
+					die(__FUNCTION__ . __LINE__ . $this->_mysqli->connect_error);
 				}
 			}
 
-			return $this->_connect;
+			return $this->_mysqli;
 		}
 
 		public function disConnect() {
-			mysql_close($this->_connect);
-			$this->_connect = false;
+			$this->_mysqli->close();
 		}
 
 		public function execSql($sql) {
 			$this->connect();
-			return mysql_query($sql, $this->_connect);
-		}
-
-	}
-
-	class Sqlite3Access
-	{
-		private $_dbFileName;
-		private $_connect;
-
-		function __construct($dbFileName) {
-			$this->_dbFileName= $dbFileName;
-		}
-
-		public function connect() {
-			$this->_connect = sqlite_open($this->_dbFileName);
-		}
-
-		public function disConnect() {
-
-			sqlite_close($this->_connect);
-		}
-
-		public function execSql($sql) {
-			$this->_connect->query($sql);
-		}
-
-		public function fetchAll($sqlResult) {
-			return $sqlResult->fetchAll(SQLITE_ASSOC);
+			return $this->_mysqli->query($sql);
 		}
 	}
 ?>

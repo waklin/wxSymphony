@@ -22,24 +22,22 @@
 
 		public function query()
 		{
-			//$dbName = $this->_getDbPath();
-			$dbName = "DbFiles/beijing";
+			$db = new DBAccess();
 			$lineName = $this->_requestMsg->Content;
+			$sql = sprintf("select linename,linetime from route where linename like '%%%s%%'", $lineName);
+			$result = $db->execSql($sql);
 
-			$db = new SQLite3($dbName);
-			$sql = sprintf("select linename,linetime from lines where linename like '%%%s%%'", $lineName);
-			$result = $db->query($sql);
-
-			$num = 0;
 			$content = "";
-			while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-				$line = $row['linename'] . "        " .  $row['linetime'];
-				$content = $content . $line . "<br/>";
-				$num++;
-			}
-
-			if ($num == 0) {
+			$num = $result->num_rows;
+			
+			if ($num <= 0) {
 				$content = "no line.";
+			}
+			else {
+				while ($row = $result->fetch_array()) {
+					$line = $row['linename'] . "        " .  $row['linetime'];
+					$content = $content . $line . "\n";
+				}
 			}
 
 			$textMessage = new TextMessage();
@@ -48,10 +46,6 @@
 			$textMessage->Content = $content;
 
 			return $textMessage->generateContent();
-		}
-
-		private function _getDbPath() {
-			// body...
 		}
 	}
 ?>

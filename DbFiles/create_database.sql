@@ -104,3 +104,24 @@ insert into city(id, name) VALUES(0, '未知');
 insert into city(name) VALUES('北京');
 insert into city(name) VALUES('上海');
 insert into city(name) VALUES('深圳');
+
+CREATE TABLE `attention` (
+  `id` INTEGER(11) NOT NULL AUTO_INCREMENT,
+  `user` INTEGER(11) NOT NULL,
+  `route` INTEGER(11) NOT NULL,
+  `pm_morning` TINYINT(4) NOT NULL DEFAULT '1',
+  `route_opp` INTEGER(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+)ENGINE=InnoDB
+AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
+
+CREATE TABLE `track` (
+  `id` INTEGER(11) NOT NULL AUTO_INCREMENT,
+  `city` INTEGER(11) NOT NULL,
+  `user` INTEGER(11) NOT NULL,
+  `state` INTEGER(11) DEFAULT NULL,
+  `lastupdate` DATETIME DEFAULT NULL,
+  `pm` TINYINT(4) NOT NULL,
+  PRIMARY KEY (`id`)
+)ENGINE=InnoDB
+AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';

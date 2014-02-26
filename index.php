@@ -1,18 +1,17 @@
 <?php
-	session_start();
-	$pg_uuid = 'ac606826-9620-490b-b850-ea9dbce6cfd5';
+	//session_start();
+	//$pg_uuid = 'ac606826-9620-490b-b850-ea9dbce6cfd5';
+	//if (!isset($_SESSION[$pg_uuid])) {
+		//$_SESSION[$pg_uuid] = 4;
+	//}
+	//else {
+		//$_SESSION[$pg_uuid] += 1;
+	//}
+	//var_dump($_SESSION);
 
-	if (!isset($_SESSION[$pg_uuid])) {
-		$_SESSION[$pg_uuid] = 4;
-	}
-	else {
-		$_SESSION[$pg_uuid] += 1;
-	}
-	var_dump($_SESSION);
-
-	if ($_SESSION[$pg_uuid] == 6) {
-		unset($_SESSION[$pg_uuid]);
-	}
+	//if ($_SESSION[$pg_uuid] == 6) {
+		//unset($_SESSION[$pg_uuid]);
+	//}
 
 	require_once("global.php");
 	require_once(MESSAGES_MODULE_PATH . "include.php");
@@ -69,22 +68,22 @@
 	if(defined(DEPLOY_BAE))
 		exit();
 
-	//$xmlString = "<xml>
-				//<ToUserName><![CDATA[gl]]></ToUserName>
-				//<FromUserName><![CDATA[xyc]]></FromUserName>
-				//<CreateTime>2014/02/10</CreateTime>
-				//<MsgType><![CDATA[text]]></MsgType>
-				//<Content><![CDATA[919]]></Content>
-				//<FuncFlag>0</FuncFlag>
-				//</xml>";
-
 	$xmlString = "<xml>
 				<ToUserName><![CDATA[gl]]></ToUserName>
 				<FromUserName><![CDATA[waklin1982]]></FromUserName>
-				<CreateTime>123456789</CreateTime>
-				<MsgType><![CDATA[event]]></MsgType>
-				<Event><![CDATA[unsubscribe]]></Event>
+				<CreateTime>2014/02/10</CreateTime>
+				<MsgType><![CDATA[text]]></MsgType>
+				<Content><![CDATA[s618]]></Content>
+				<FuncFlag>0</FuncFlag>
 				</xml>";
+
+	//$xmlString = "<xml>
+				//<ToUserName><![CDATA[gl]]></ToUserName>
+				//<FromUserName><![CDATA[waklin1982]]></FromUserName>
+				//<CreateTime>123456789</CreateTime>
+				//<MsgType><![CDATA[event]]></MsgType>
+				//<Event><![CDATA[subscribe]]></Event>
+				//</xml>";
 
 	$handler = HandlerFactory::createHandler($xmlString);
 	$child = $handler->handleRequest();

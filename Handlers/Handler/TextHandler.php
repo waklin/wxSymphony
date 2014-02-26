@@ -2,7 +2,7 @@
 	require_once("global.php");
 	require_once(HANDLERS_MODULE_PATH . "IHandler.php");
 	require_once(MESSAGES_MODULE_PATH . "include.php");
-	require_once(BUSINESS_MODULE_PATH. "QueryLine.php");
+	require_once(BUSINESS_MODULE_PATH . "include.php");
 
 	class TextHandler implements IHandler
 	{
@@ -28,7 +28,7 @@
 			$cmd = substr(trim($textMessage->Content), 0, 1);
 			if ($cmd == "s") {
 				$subject = new Subject();
-				return $subject->add($textMessage);
+				return $subject->perform($textMessage);
 			}
 			else {
 				$queryLine = new QueryLine($textMessage);

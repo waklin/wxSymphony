@@ -1,9 +1,14 @@
 <?php
+	require_once("global.php");
+	require_once("DBAccess.php");
+
 	/**
 	 * 变量解释
 	 * route: 	线路
 	 * pm:		线路的方向 1-始发站to终点站 2-终点站to始发站 3-环线
 	 */
+	define("ROUTE", "route");
+	define("PM", "pm");
 
 	/**
 	 * 指令详解
@@ -12,31 +17,42 @@
 	 * s[q]	退出追踪
 	 */
 
-	session_start();
+	//session_start();
 
 	/**
 	 * 
 	 */
 	class Subject
 	{
-		
-		private $_dbAccess = new DBAccess();
+		private $_dbAccess;
 
-		/**
-		 * 
-		 */
 		public function __construct()
 		{
-			;
+			$this->_dbAccess = new DBAccess();
 		}
 
 		/**
 		 * 处理文本消息
 		 * 如果s后跟着q，那么调用remove，否则调用remove
-		 * 
 		 */
 		public function perform($textMsg) {
+			$cmd = trim($textMsg->Content);
+			$secondChr = substr($textMsg, 1, 1);
 
+			$responseMsg = new TextMessage();
+			$responseMsg->FromUserName = $textMsg->ToUserName;
+			$responseMsg->ToUserName = $textMsg->FromUserName;
+			if ($secondChr && $secondChr == "q") {
+				$this->remove($textMsg->FromUserName);
+				$responseMsg->Content = "quit track!";
+			}
+			else {
+				$this->add($textMsg);
+				$responseMsg->Content = "add track!";
+			}
+			$responseMsg->CreateTime = date('Y-m-d H:i:s', time());
+			xDump($responseMsg, "responseMsg");
+			return $responseMsg->generateContent();
 		}
 
 		/**
@@ -44,9 +60,47 @@
 		 */
 		public function add($textMsg) {
 			$wxAppId = $textMsg->FromUserName;
+			$sql = sprintf("select user.id, user.city_id from user"
+				. " where user.wxAppId = '%s'",
+				$wxAppId
+			);
 
-			$userId;
-			;
+			xDump($sql, "sql");
+
+			$result = $this->_execSql($sql);
+			$userId = null;
+			$cityId = null;
+			if ($result) {
+				$row = $result->fetch_assoc();
+				xDump($row, "row");
+				$userId = $row["id"];
+				$cityId = $row["city_id"];
+
+				$result->free();
+			}
+
+			$paramStr = substr($textMsg->Content, 1);
+			xDump($paramStr, "paramStr");
+
+			$array = $this->_parseCmdForAdd($userId, $paramStr);
+			xDump($array, "array");
+
+			if ($array) {
+				if ($array[ROUTE] > 0) {
+					$sql = sprintf("insert into track(city, user, route, pm)"
+						. " values(%s, %s, %s, %s)",
+						$cityId,
+						$userId,
+						$array[ROUTE],
+						$array[PM]
+					);
+					xDump($sql, "sql");
+					$this->_execSql($sql);
+				}
+			}
+			else {
+				;
+			}
 		}
 
 		/**
@@ -69,17 +123,17 @@
 
 		/**
 		 * 解析命令: 
-		 * 已s开头的文本消息的内容
+		 * 以s开头的文本消息的内容
 		 * 1. 如果s后为空，则从attention表中找到唯一的记录(如果不唯一则提示用户输入完整的s命令: s[线路名称])
 		 * 2. 如果s后不为空，则假设s后的字符为线路名称
 		 * param $paramStr 
 		 * return route's id, pm
 		 */
 		function _parseCmdForAdd($userId, $paramStr) {
-			$array = [
-				"route" => 0,
-				"pm" => 1
-			];
+			$array = array(
+				ROUTE => 0,
+				PM => 1
+			);
 
 			$lineName = null;
 			if (strlen($paramStr) > 0) {
@@ -93,29 +147,33 @@
 				. " and user.id = %s",
 				$userId
 			);
+
+			xDump($sql,"sql");
+
 			$result = $this->_execSql($sql);
 			$num = $result->num_rows;
 			if ($num > 0) {
 				if (isset($lineName)) {		// s [线路名称]
 					$matchTimes = 0;
 					while ($row=$result->fetch_assoc()) {
-						$match = strstr($row["route.linename"], $lineName);
+						$match = strstr($row["linename"], $lineName);
 						if ($match) {
-							$array["route"] = $row["route.id"];
+							$array[ROUTE] = $row["id"];
 							$matchTimes++;
 						}
 					}
 
 					if ($matchTimes == 0) {		// 没有匹配到关注线路
-						$array["route"] = 0;
+						$array[ROUTE] = 0;
 					}
 					else if ($matchTimes > 1) {	// 匹配到多个相似的线路
-						$array["route"] = -1;
+						$array[ROUTE] = -1;
 					}
 				}
 				else {	// s
 					if ($num == 1) {
-												
+						$row=$result->fetch_assoc();
+						$array["route"] = $row["route.id"];
 					}
 				}
 				$result->free();
@@ -149,10 +207,10 @@
 			$explicit = ($cmd.count() > 1);		// 指定了序号
 			$attentionIndex = 0;
 			if ($explicit) {
-				$attentionIndex = intval($cmd[1])
+				$attentionIndex = intval($cmd[1]);
 			}
 
-			if (!isset(($_SESSION[$wxAppId]))) {
+			if (!isset($_SESSION[$wxAppId])) {
 				$sql = sprintf("select user.id, user.city_id, from user, attention"
 					. " where user.id = attention.user "
 					. " and user.wxAppId = '%s'", $wxAppId);
@@ -184,7 +242,7 @@
 		/**
 		 * 加入跟踪信息到track表中
 		 */
-		public function track($cityId, $userId, $trackId, $pm, $lastUpdate) {
+		public function track1($cityId, $userId, $trackId, $pm, $lastUpdate) {
 			// 线路名称，上行/下行
 			// 加入到track表中
 			// 创建一个session维护subject信息，

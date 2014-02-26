@@ -115,13 +115,21 @@ CREATE TABLE `attention` (
 )ENGINE=InnoDB
 AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
 
+insert into attention(user, route) values(1, 299);
+
 CREATE TABLE `track` (
-  `id` INTEGER(11) NOT NULL AUTO_INCREMENT,
-  `city` INTEGER(11) NOT NULL,
-  `user` INTEGER(11) NOT NULL,
-  `state` INTEGER(11) DEFAULT NULL,
-  `lastupdate` DATETIME DEFAULT NULL,
-  `pm` TINYINT(4) NOT NULL,
-  PRIMARY KEY (`id`)
-)ENGINE=InnoDB
-AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `city` int(11) NOT NULL,
+  `user` int(11) NOT NULL,
+  `route` int(11) NOT NULL,
+  `pm` tinyint(4) NOT NULL,
+  `state` int(11) DEFAULT NULL,
+  `lastupdate` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `city` (`city`),
+  KEY `user` (`user`),
+  KEY `route` (`route`),
+  CONSTRAINT `track_fk3` FOREIGN KEY (`route`) REFERENCES `route` (`id`),
+  CONSTRAINT `track_fk1` FOREIGN KEY (`city`) REFERENCES `city` (`id`),
+  CONSTRAINT `track_fk2` FOREIGN KEY (`user`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

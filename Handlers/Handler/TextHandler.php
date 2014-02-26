@@ -25,8 +25,15 @@
 			return $textMessage->generateContent();
 			 */
 
-			$queryLine = new QueryLine($textMessage);
-			return $queryLine->query();
+			$cmd = substr(trim($textMessage->Content), 0, 1);
+			if ($cmd == "s") {
+				$subject = new Subject();
+				return $subject->add($textMessage);
+			}
+			else {
+				$queryLine = new QueryLine($textMessage);
+				return $queryLine->query();
+			}
 		}
 	}
 ?>

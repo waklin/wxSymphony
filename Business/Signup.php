@@ -1,6 +1,9 @@
 <?php 
 	require_once("DBAccess.php");
 
+	/**
+	 * 关注/取消关注
+	 */
 	class Signup
 	{
 		private $_dbAccess;

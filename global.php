@@ -7,13 +7,15 @@
 	define("HANDLERS_MODULE_PATH", "Handlers/");
 	define("BUSINESS_MODULE_PATH", "Business/");
 
-	function xDump($var, $describe) {
-		if (!defined(DEPLOY_BAE)) {
+	function xDump($var) {
+		if (defined(DEPLOY_BAE)) {
 			return;
 		}
 
 		echo("<br/>");
-		echo($describe . "=");
+		$array = debug_backtrace();
+		$codePos = sprintf(__FUNCTION__ ."_" . "<B>%s on line %s:</B>", $array[0]['file'], $array[0]['line']);
+		echo($codePos);
 		var_dump($var);
 		echo("<br/>");
 	}

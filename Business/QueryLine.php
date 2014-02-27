@@ -3,7 +3,7 @@
 	require_once(MESSAGES_MODULE_PATH . "include.php");
 
 	/**
-	 * 
+	 * 查询线路
 	 */
 	class QueryLine
 	{

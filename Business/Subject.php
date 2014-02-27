@@ -1,26 +1,75 @@
-<?php
+ï»¿<?php
+	$result = session_start();
+	xDump($result);
+	$_SESSION['favcolor'] = 'green';
+	xDump($_SESSION['favcolor']);
+
 	require_once("global.php");
 	require_once("DBAccess.php");
 
 	/**
-	 * ±äÁ¿½âÊÍ
-	 * route: 	ÏßÂ·
-	 * pm:		ÏßÂ·µÄ·½Ïò 1-Ê¼·¢Õ¾toÖÕµãÕ¾ 2-ÖÕµãÕ¾toÊ¼·¢Õ¾ 3-»·Ïß
+	 * å˜é‡è§£é‡Š
+	 * route: 	çº¿è·¯
+	 * pm:		çº¿è·¯çš„æ–¹å‘ 1-å§‹å‘ç«™toç»ˆç‚¹ç«™ 2-ç»ˆç‚¹ç«™toå§‹å‘ç«™ 3-çŽ¯çº¿
 	 */
 	define("ROUTE", "route");
 	define("PM", "pm");
 
 	/**
-	 * Ö¸ÁîÏê½â
-	 * s[ÏßÂ·Ãû³Æ] ×·×ÙÖ¸¶¨ÏßÂ·
-	 * s ×·×ÙÎ¨attentionÖÐÎ¨Ò»µÄÏßÂ·
-	 * s[q]	ÍË³ö×·×Ù
+	 * æŒ‡ä»¤è¯¦è§£
+	 * s[çº¿è·¯åç§°] è¿½è¸ªæŒ‡å®šçº¿è·¯
+	 * s è¿½è¸ªå”¯attentionä¸­å”¯ä¸€çš„çº¿è·¯
+	 * s[q]	é€€å‡ºè¿½è¸ª
 	 */
 
-	//session_start();
+	class SubjectResult
+	{
+		const UNKNOWN_USER = 1;
+
+	   	const ADD_NOATTENTION = 11;
+		const ADD_MULTIATTENTION = 12;
+		const ADD_EXSITTRACK = 13;
+		const ADD_SUCCESSFUL = 20;
+
+		const REMOVE_NOTRACK = 21;
+		const REMOVE_SUCCESSFUL = 30;
+
+		public static function ToString($result) {
+			$str = null;
+
+			switch ($result)
+			{
+			case self::ADD_NOATTENTION:
+				$str = "no attention route.";
+				break;
+			case self::ADD_MULTIATTENTION:
+				$str = "so much attention.";
+				break;
+			case self::ADD_SUCCESSFUL:
+				$str = "add track successful.";
+				break;
+			case self::ADD_EXSITTRACK:
+				$str = "you have a track already, please send [sq] to quit.";
+				break;
+			case self::UNKNOWN_USER:
+				$str = "unknown user.";
+				break;
+			case self::REMOVE_SUCCESSFUL:
+				$str = "remove track successful.";
+				break;
+			case self::REMOVE_NOTRACK:
+				$str = "you have not track any route.";
+				break;
+			default:
+				$str = "unknown result.";
+				break;
+			}
+			return $str;
+		}
+	}
 
 	/**
-	 * 
+	 * çº¿è·¯è¿½è¸ªç±»
 	 */
 	class Subject
 	{
@@ -32,89 +81,128 @@
 		}
 
 		/**
-		 * ´¦ÀíÎÄ±¾ÏûÏ¢
-		 * Èç¹ûsºó¸ú×Åq£¬ÄÇÃ´µ÷ÓÃremove£¬·ñÔòµ÷ÓÃremove
+		 * å¤„ç†æ–‡æœ¬æ¶ˆæ¯
+		 * å¦‚æžœsåŽè·Ÿç€qï¼Œé‚£ä¹ˆè°ƒç”¨removeï¼Œå¦åˆ™è°ƒç”¨remove
 		 */
 		public function perform($textMsg) {
-			$cmd = trim($textMsg->Content);
-			$secondChr = substr($textMsg, 1, 1);
-
 			$responseMsg = new TextMessage();
 			$responseMsg->FromUserName = $textMsg->ToUserName;
 			$responseMsg->ToUserName = $textMsg->FromUserName;
-			if ($secondChr && $secondChr == "q") {
-				$this->remove($textMsg->FromUserName);
-				$responseMsg->Content = "quit track!";
-			}
-			else {
-				$this->add($textMsg);
-				$responseMsg->Content = "add track!";
-			}
-			$responseMsg->CreateTime = date('Y-m-d H:i:s', time());
-			xDump($responseMsg, "responseMsg");
-			return $responseMsg->generateContent();
-		}
 
-		/**
-		 * ¼ÓÈëÒ»ÌõÏßÂ·×·×ÙÐÅÏ¢
-		 */
-		public function add($textMsg) {
 			$wxAppId = $textMsg->FromUserName;
 			$sql = sprintf("select user.id, user.city_id from user"
 				. " where user.wxAppId = '%s'",
 				$wxAppId
 			);
-
-			xDump($sql, "sql");
-
+			xDump($sql);			
 			$result = $this->_execSql($sql);
 			$userId = null;
 			$cityId = null;
 			if ($result) {
 				$row = $result->fetch_assoc();
-				xDump($row, "row");
+				xDump($row);
 				$userId = $row["id"];
 				$cityId = $row["city_id"];
 
 				$result->free();
 			}
 
-			$paramStr = substr($textMsg->Content, 1);
-			xDump($paramStr, "paramStr");
+			if (!isset($userId)) {
+				$responseMsg->Content = SubjectResult::ToString(SubjectResult::UNKNOWN_USER);
+			}
+			else {
+				$cmd = trim($textMsg->Content);
+				$secondChr = substr($cmd, 1, 1);
+				xDump($secondChr);
 
+				if ($secondChr && $secondChr == "q") {
+					$result = $this->remove($wxAppId, $userId);
+				}
+				else {
+					$result = $this->add($wxAppId, $userId, $cityId, $textMsg->Content);
+				}
+				$responseMsg->Content = SubjectResult::ToString($result);
+			}
+
+			$responseMsg->CreateTime = date('Y-m-d H:i:s', time());
+			xDump($responseMsg);
+
+			return $responseMsg->generateContent();
+		}
+
+		/**
+		 * æ·»åŠ ä¸€æ¡è®°å½•åˆ°trackè¡¨
+		 */
+		function _insertTrack($cityId, $userId, $routeId, $pm) {
+			$sql = sprintf("insert into track(city, user, route, pm)"
+				. " values(%s, %s, %s, %s)",
+				$cityId,
+				$userId,
+				$routeId,
+				$pm
+			);
+			xDump($sql);
+			return $this->_execSql($sql);
+		}
+
+		/**
+		 * åŠ å…¥ä¸€æ¡çº¿è·¯è¿½è¸ªä¿¡æ¯
+		 */
+		public function add($wxAppId, $userId, $cityId, $cmd) {
+			xDump($_SESSION[$wxAppId]);
+			if (isset($_SESSION[$wxAppId])) {
+				return SubjectResult::ADD_EXSITTRACK;
+			}
+
+			$paramStr = substr($cmd, 1);
+			xDump($paramStr);
 			$array = $this->_parseCmdForAdd($userId, $paramStr);
-			xDump($array, "array");
+			xDump($array);
 
 			if ($array) {
 				if ($array[ROUTE] > 0) {
-					$sql = sprintf("insert into track(city, user, route, pm)"
-						. " values(%s, %s, %s, %s)",
-						$cityId,
-						$userId,
-						$array[ROUTE],
-						$array[PM]
-					);
-					xDump($sql, "sql");
-					$this->_execSql($sql);
+					if ($this->_insertTrack($cityId, $userId, $array[ROUTE], $array[PM])){
+						$_SESSION[$wxAppId] = $array[ROUTE];
+						return SubjectResult::ADD_SUCCESSFUL;
+					}
+				}
+				else if ($array[ROUTE] == 0) {
+					return SubjectResult::ADD_NOATTENTION;
+				}
+				else {
+					return SubjectResult::ADD_MULTIATTENTION;
 				}
 			}
 			else {
-				;
+				return SubjectResult::ADD_NOATTENTION;
 			}
 		}
 
 		/**
-		 * ¸üÐÂÏßÂ·µÄÕ¾µã
+		 * æ›´æ–°çº¿è·¯çš„ç«™ç‚¹
 		 */
 		public function track($locationMsg) {
 			// body...
 		}
 
 		/**
-		 * É¾³ýÒ»ÌõÏßÂ·×·×ÙÐÅÏ¢
+		 * åˆ é™¤ä¸€æ¡çº¿è·¯è¿½è¸ªä¿¡æ¯
 		 */
-		public function remove($wxAppId) {
-			// body...
+		function remove($wxAppId, $userId) {
+			if (!isset($_SESSION[$wxAppId])) {
+				return SubjectResult::REMOVE_NOTRACK;
+			}
+
+			$sql = sprintf("delete from track"
+				. " where user = '%s'",
+				$userId
+			);
+			xDump($sql);
+
+			if ($this->_execSql($sql)) {
+				unset($_SESSION[$wxAppId]);
+				return SubjectResult::REMOVE_SUCCESSFUL;
+			}
 		}
 
 		function _execSql($sql) {
@@ -122,12 +210,19 @@
 		}
 
 		/**
-		 * ½âÎöÃüÁî: 
-		 * ÒÔs¿ªÍ·µÄÎÄ±¾ÏûÏ¢µÄÄÚÈÝ
-		 * 1. Èç¹ûsºóÎª¿Õ£¬Ôò´Óattention±íÖÐÕÒµ½Î¨Ò»µÄ¼ÇÂ¼(Èç¹û²»Î¨Ò»ÔòÌáÊ¾ÓÃ»§ÊäÈëÍêÕûµÄsÃüÁî: s[ÏßÂ·Ãû³Æ])
-		 * 2. Èç¹ûsºó²»Îª¿Õ£¬Ôò¼ÙÉèsºóµÄ×Ö·ûÎªÏßÂ·Ãû³Æ
-		 * param $paramStr 
-		 * return route's id, pm
+		 * è§£æžå‘½ä»¤: 
+		 * ä»¥så¼€å¤´çš„æ–‡æœ¬æ¶ˆæ¯çš„å†…å®¹
+		 * 1. å¦‚æžœsåŽä¸ºç©ºï¼Œåˆ™ä»Žattentionè¡¨ä¸­æ‰¾åˆ°å”¯ä¸€çš„è®°å½•(å¦‚æžœä¸å”¯ä¸€åˆ™æç¤ºç”¨æˆ·è¾“å…¥å®Œæ•´çš„så‘½ä»¤: s[çº¿è·¯åç§°])
+		 * 2. å¦‚æžœsåŽä¸ä¸ºç©ºï¼Œåˆ™å‡è®¾såŽçš„å­—ç¬¦ä¸ºçº¿è·¯åç§°
+		 *
+		 * param 
+		 *   $paramStr såŽçš„å­—ç¬¦ä¸²
+		 *
+		 * return 
+		 *   1. æ•°ç»„[route, pm] 
+		 *     route -1:å¤šæ¡å…³æ³¨çº¿è·¯ 0:æ²¡æœ‰æ‰¾åˆ°æŒ‡å®šçš„çº¿è·¯ >0:çº¿è·¯çš„id
+		 *     pm æ–¹å‘
+		 *   2. null æ²¡æœ‰å…³æ³¨ä»»ä½•çº¿è·¯
 		 */
 		function _parseCmdForAdd($userId, $paramStr) {
 			$array = array(
@@ -148,12 +243,12 @@
 				$userId
 			);
 
-			xDump($sql,"sql");
+			xDump($sql);
 
 			$result = $this->_execSql($sql);
 			$num = $result->num_rows;
 			if ($num > 0) {
-				if (isset($lineName)) {		// s [ÏßÂ·Ãû³Æ]
+				if (isset($lineName)) {		// s [çº¿è·¯åç§°]
 					$matchTimes = 0;
 					while ($row=$result->fetch_assoc()) {
 						$match = strstr($row["linename"], $lineName);
@@ -163,108 +258,40 @@
 						}
 					}
 
-					if ($matchTimes == 0) {		// Ã»ÓÐÆ¥Åäµ½¹Ø×¢ÏßÂ·
+					if ($matchTimes == 0) {		// æ²¡æœ‰åŒ¹é…åˆ°å…³æ³¨çº¿è·¯
 						$array[ROUTE] = 0;
 					}
-					else if ($matchTimes > 1) {	// Æ¥Åäµ½¶à¸öÏàËÆµÄÏßÂ·
+					else if ($matchTimes > 1) {	// åŒ¹é…åˆ°å¤šä¸ªç›¸ä¼¼çš„çº¿è·¯
 						$array[ROUTE] = -1;
 					}
 				}
 				else {	// s
 					if ($num == 1) {
 						$row=$result->fetch_assoc();
-						$array["route"] = $row["route.id"];
+						$array["route"] = $row["id"];
+					}
+					else {
+						$array["route"] = -1;
 					}
 				}
 				$result->free();
 			}
 			else {
-				// Ã»ÓÐ×·×ÙÈÎºÎÏßÂ·
+				// æ²¡æœ‰è¿½è¸ªä»»ä½•çº¿è·¯
 				return null;
 			}
 
 			return $array;
 		}
 
-		/**
-		 * Ìí¼ÓÒ»Ìõ¼ÇÂ¼µ½track±í
-		 */
-		function _generate($cityId, $userId, $routeId, $pm) {
-			// body...
-		}
-
-
-		/**
-		 * s [attentionÖÐµÄÐòºÅ]
-		 * s [1]
-		 * ÍêÉÆÎÄ±¾ÏûÏ¢
-		 */
-		public function prepare($textMsg) {
-			$wxAppId = $textMsg->FromUserName;
-			$content = $textMsg->Content;
-
-			$cmd = explode(" ", $content);
-			$explicit = ($cmd.count() > 1);		// Ö¸¶¨ÁËÐòºÅ
-			$attentionIndex = 0;
-			if ($explicit) {
-				$attentionIndex = intval($cmd[1]);
-			}
-
-			if (!isset($_SESSION[$wxAppId])) {
-				$sql = sprintf("select user.id, user.city_id, from user, attention"
-					. " where user.id = attention.user "
-					. " and user.wxAppId = '%s'", $wxAppId);
-				$result = $_dbAccess->execSql($sql);
-				$num = $result->num_rows;
-				if ($num <= 0) {
-					// ·µ»ØÃ»ÓÐÅäÖÃÓÃ»§ÏßÂ·µÄÁ´½ÓÐÅÏ¢
-				}
-				else {
-					$index = 0;
-					while ($row = $result->fetch_assoc()) {
-						if ($index == $attentionIndex) {
-							$userId = $row["user.id"];
-							$cityId = $row["user.city_id"];
-							$routeId = $row["attention.route"];
-							$pm = $row["attention.pm_morning"];
-							$now = date("Y-m-d H:i:s", time());
-							$this->track($cityId, $userId, $routeId, $pm, $now);
-							break;
-						}
-					}
-					$result->free();
-				}
-
-				$_SESSION[$textMsg->FromUserName] = true;
-			}
-		}
-
-		/**
-		 * ¼ÓÈë¸ú×ÙÐÅÏ¢µ½track±íÖÐ
-		 */
-		public function track1($cityId, $userId, $trackId, $pm, $lastUpdate) {
-			// ÏßÂ·Ãû³Æ£¬ÉÏÐÐ/ÏÂÐÐ
-			// ¼ÓÈëµ½track±íÖÐ
-			// ´´½¨Ò»¸ösessionÎ¬»¤subjectÐÅÏ¢£¬
-			$sql = sprintf("insert into track(city,user,state,lastupdate,pm)
-				values(%d,%d,%d,'%s',%d)",
-					$cityId,
-					$userId,
-					$trackId,
-					$lastUpdate,
-					$pm);
-
-			$this->_dbAccess.execSql($sql);
-		}
-
 		public function untrack($textMsg) {
-			// ´Ótrack±íÖÐÉ¾³ýÓÃ»§µÄtrack¼ÇÂ¼
+			// ä»Žtrackè¡¨ä¸­åˆ é™¤ç”¨æˆ·çš„trackè®°å½•
 		}
 
 		public function updateLocation($locationMsg) {
-			// ¸ù¾ÝlocationMsgÑ°ÕÒÖ¸¶¨µÄÕ¾µã£¬²¢¸üÐÂtrack±í
-			// ¸üÐÂ³É¹¦ÌáÊ¾³É¹¦¸üÐÂÕ¾µãÐÅÏ¢
-			// Ê§°ÜÌáÊ¾¸üÐÂÕ¾µãÊ§°ÜµÄÔ­Òò(Î´ÕÒµ½´ËÕ¾µã)
+			// æ ¹æ®locationMsgå¯»æ‰¾æŒ‡å®šçš„ç«™ç‚¹ï¼Œå¹¶æ›´æ–°trackè¡¨
+			// æ›´æ–°æˆåŠŸæç¤ºæˆåŠŸæ›´æ–°ç«™ç‚¹ä¿¡æ¯
+			// å¤±è´¥æç¤ºæ›´æ–°ç«™ç‚¹å¤±è´¥çš„åŽŸå› (æœªæ‰¾åˆ°æ­¤ç«™ç‚¹)
 		}
 	}
 ?>

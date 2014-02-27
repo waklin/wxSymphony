@@ -12,6 +12,7 @@
 	//if ($_SESSION[$pg_uuid] == 6) {
 		//unset($_SESSION[$pg_uuid]);
 	//}
+	//exit;
 
 	require_once("global.php");
 	require_once(MESSAGES_MODULE_PATH . "include.php");
@@ -50,7 +51,7 @@
 		{
 			$signature = $_GET["signature"];
 			$timestamp = $_GET["timestamp"];
-			$nonce = $_GET["nonce"];	
+			$nonce = $_GET["nonce"];
 						
 			$token = TOKEN;
 			$tmpArr = array($token, $timestamp, $nonce);
@@ -70,16 +71,16 @@
 
 	$xmlString = "<xml>
 				<ToUserName><![CDATA[gl]]></ToUserName>
-				<FromUserName><![CDATA[waklin1982]]></FromUserName>
+				<FromUserName><![CDATA[waklin]]></FromUserName>
 				<CreateTime>2014/02/10</CreateTime>
 				<MsgType><![CDATA[text]]></MsgType>
-				<Content><![CDATA[s618]]></Content>
+				<Content><![CDATA[s]]></Content>
 				<FuncFlag>0</FuncFlag>
 				</xml>";
 
 	//$xmlString = "<xml>
 				//<ToUserName><![CDATA[gl]]></ToUserName>
-				//<FromUserName><![CDATA[waklin1982]]></FromUserName>
+				//<FromUserName><![CDATA[waklin1234]]></FromUserName>
 				//<CreateTime>123456789</CreateTime>
 				//<MsgType><![CDATA[event]]></MsgType>
 				//<Event><![CDATA[subscribe]]></Event>

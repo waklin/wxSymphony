@@ -7,7 +7,7 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 def transfer(sqliteConn, mysqlConn, srcTableName, dstTableName):
-    # 从sqlite中读取数据放到list对象
+    # 浠巗qlite涓鍙栨暟鎹斁鍒發ist瀵硅薄
     sqliteCursor = sqliteConn.cursor()
     sqliteCursor.execute("select * from %s" % srcTableName)
     rows = []

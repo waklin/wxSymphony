@@ -21,8 +21,8 @@
 
 		protected function readBaseNode($simpleXml)
 		{
-			$this->FromUserName = $simpleXml->FromUserName;
-			$this->ToUserName = $simpleXml->ToUserName;
+			$this->FromUserName = (string)$simpleXml->FromUserName;
+			$this->ToUserName = (string)$simpleXml->ToUserName;
 			$this->CreateTime = $simpleXml->CreateTime;
 		}
 

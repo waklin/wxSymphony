@@ -89,6 +89,27 @@
 			$this->_dbAccess = new DBAccess();
 		}
 
+		private function _getUserInfo($wxAppId) {
+			$ret = array();
+
+			$sql = sprintf("select user.id, user.city from user"
+				. " where user.wxAppId = '%s'",
+				$wxAppId
+			);
+			xDump($sql);			
+
+			$result = $this->_execSql($sql);
+			if ($result && $result->num_rows > 0) {
+				$row = $result->fetch_assoc();
+				xDump($row);
+				$ret["id"] = $row["id"];
+				$ret["city"] = $row["city"];
+				$result->free();
+			}
+
+			return $ret;
+		}
+
 		/**
 		 * 处理文本消息
 		 * 如果s后跟着q，那么调用remove，否则调用remove
@@ -99,22 +120,9 @@
 			$responseMsg->ToUserName = $textMsg->FromUserName;
 
 			$wxAppId = $textMsg->FromUserName;
-			$sql = sprintf("select user.id, user.city from user"
-				. " where user.wxAppId = '%s'",
-				$wxAppId
-			);
-			xDump($sql);			
-			$result = $this->_execSql($sql);
-			$userId = null;
-			$cityId = null;
-			if ($result) {
-				$row = $result->fetch_assoc();
-				xDump($row);
-				$userId = $row["id"];
-				$cityId = $row["city"];
-
-				$result->free();
-			}
+			$userInfo = $this->_getUserInfo($wxAppId);
+			$userId = $userInfo["id"];
+			$cityId = $userInfo["city"];
 
 			if (!isset($userId)) {
 				$responseMsg->Content = SubjectResult::ToString(SubjectResult::UNKNOWN_USER);
@@ -205,7 +213,27 @@
 		 * 更新线路的站点
 		 */
 		public function track($locationMsg) {
-			// body...
+			$wxAppId = $locationMsg->FromUserName;
+			//$userInfo = $this->_getUserInfo($wxAppId);
+
+			$userId = 0;
+			$responseMsg = new TextMessage();
+			$responseMsg->FromUserName = $locationMsg->ToUserName;
+			$responseMsg->ToUserName = $locationMsg->FromUserName;
+
+			$responseMsg->Content = sprintf("%s\n longitude=%s\n latitude=%s",
+				$locationMsg->Label,
+				$locationMsg->Location_X,
+				$locationMsg->Location_Y
+			);
+			$responseMsg->CreateTime = date('Y-m-d H:i:s', time());
+
+			//if ($this->_isTracking($userId)) {
+				//// 从stations表中获取跟踪线路的站点信息
+				//// 遍历线路的站点，是否匹配locationMsg的经纬度
+			//}
+
+			return $responseMsg->generateContent();
 		}
 
 		/**

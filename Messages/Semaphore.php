@@ -1,4 +1,5 @@
 <?php
+	require_once("global.php");
 	interface IMessage
 	{
 		function getTemplate();
@@ -29,7 +30,6 @@
 		public static function loadFromXml($messageClassName, $xmlString)
 		{
 			$result = null;
-
 			if (!empty($xmlString))
 			{
 				$cls = new ReflectionClass($messageClassName);
@@ -38,6 +38,7 @@
 				$simpleXml = simplexml_load_string($xmlString, "SimpleXMLElement", LIBXML_NOCDATA);
 				$result->readBaseNode($simpleXml);
 				$result->readPlusNode($simpleXml);
+
 			}
 
 			return $result;

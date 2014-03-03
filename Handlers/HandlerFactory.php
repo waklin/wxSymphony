@@ -4,6 +4,7 @@
 	require_once(HANDLERS_MODULE_PATH . "IHandler.php");
 	require_once(HANDLERS_MODULE_PATH . "Handler/TextHandler.php");
 	require_once(HANDLERS_MODULE_PATH . "Handler/EventHandler.php");
+	require_once(HANDLERS_MODULE_PATH . "Handler/LocationHandler.php");
 
 	require_once(MESSAGES_MODULE_PATH . "include.php");
 
@@ -22,6 +23,9 @@
 			else if	($simpleXml->MsgType == MSGTYPE_EVENTTAG)
 			{
 				$result = new EventHandler($requestString);
+			}
+			else if ($simpleXml->MsgType == MSGTYPE_LOCATIONTAG) {
+				$result = new LocationHandler($requestString);
 			}
 			return $result;
 		}

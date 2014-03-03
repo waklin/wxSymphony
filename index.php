@@ -17,7 +17,7 @@
 	require_once("global.php");
 	require_once(MESSAGES_MODULE_PATH . "include.php");
 	require_once(HANDLERS_MODULE_PATH . "include.php");
-	require_once("DBAccess.php");
+	require_once(DBACCESS_MODULE_PATH . "include.php");
 
 	define("TOKEN", "weixin");
 	$wxSvr = new wxService();
@@ -69,22 +69,22 @@
 	if(defined(DEPLOY_BAE))
 		exit();
 
-	$xmlString = "<xml>
-				<ToUserName><![CDATA[gl]]></ToUserName>
-				<FromUserName><![CDATA[waklin]]></FromUserName>
-				<CreateTime>2014/02/10</CreateTime>
-				<MsgType><![CDATA[text]]></MsgType>
-				<Content><![CDATA[s]]></Content>
-				<FuncFlag>0</FuncFlag>
-				</xml>";
+    $xmlString = "<xml>
+                <ToUserName><![CDATA[gl]]></ToUserName>
+                <FromUserName><![CDATA[waklin]]></FromUserName>
+                <CreateTime>1156219870</CreateTime>
+                <MsgType><![CDATA[text]]></MsgType>
+                <Content><![CDATA[sq]]></Content>
+                <FuncFlag>0</FuncFlag>
+                </xml>";
 
-	//$xmlString = "<xml>
-				//<ToUserName><![CDATA[gl]]></ToUserName>
-				//<FromUserName><![CDATA[waklin1234]]></FromUserName>
-				//<CreateTime>123456789</CreateTime>
-				//<MsgType><![CDATA[event]]></MsgType>
-				//<Event><![CDATA[subscribe]]></Event>
-				//</xml>";
+    //$xmlString = "<xml>
+                //<ToUserName><![CDATA[gl]]></ToUserName>
+                //<FromUserName><![CDATA[waklin]]></FromUserName>
+                //<CreateTime>1156219870</CreateTime>
+                //<MsgType><![CDATA[event]]></MsgType>
+                //<Event><![CDATA[subscribe]]></Event>
+                //</xml>";
 
 	$handler = HandlerFactory::createHandler($xmlString);
 	$child = $handler->handleRequest();

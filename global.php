@@ -6,6 +6,7 @@
 	define("MESSAGES_MODULE_PATH", "Messages/");
 	define("HANDLERS_MODULE_PATH", "Handlers/");
 	define("BUSINESS_MODULE_PATH", "Business/");
+	define("DBACCESS_MODULE_PATH", "DBAccess/");
 
 	function xDump($var) {
 		if (defined(DEPLOY_BAE)) {

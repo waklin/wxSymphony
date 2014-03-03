@@ -11,10 +11,11 @@ CREATE TABLE `user` (
   `id` INTEGER(11) NOT NULL AUTO_INCREMENT,
   `wxAppId` CHAR(255) COLLATE utf8_general_ci NOT NULL DEFAULT '',
   `name` CHAR(255) COLLATE utf8_general_ci DEFAULT '',
-  `city_id` INTEGER(11) NOT NULL DEFAULT '1',
+  `city` INTEGER(11) NOT NULL DEFAULT '1',
+  `joinTime` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `city_id` (`city_id`),
-  CONSTRAINT `user_fk` FOREIGN KEY (`city_id`) REFERENCES `city` (`id`)
+  KEY `city` (`city`),
+  CONSTRAINT `user_fk` FOREIGN KEY (`city`) REFERENCES `city` (`id`)
 )ENGINE=InnoDB
 AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
 
@@ -98,13 +99,6 @@ CREATE TABLE `stations` (
 )ENGINE=InnoDB
 AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
 
-insert company values(0, '未知');
-
-insert into city(id, name) VALUES(0, '未知');
-insert into city(name) VALUES('北京');
-insert into city(name) VALUES('上海');
-insert into city(name) VALUES('深圳');
-
 CREATE TABLE `attention` (
   `id` INTEGER(11) NOT NULL AUTO_INCREMENT,
   `user` INTEGER(11) NOT NULL,
@@ -115,21 +109,30 @@ CREATE TABLE `attention` (
 )ENGINE=InnoDB
 AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
 
-insert into attention(user, route) values(1, 299);
-
 CREATE TABLE `track` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `city` int(11) NOT NULL,
-  `user` int(11) NOT NULL,
-  `route` int(11) NOT NULL,
-  `pm` tinyint(4) NOT NULL,
-  `state` int(11) DEFAULT NULL,
-  `lastupdate` datetime DEFAULT NULL,
+  `id` INTEGER(11) NOT NULL AUTO_INCREMENT,
+  `city` INTEGER(11) NOT NULL,
+  `user` INTEGER(11) NOT NULL,
+  `route` INTEGER(11) NOT NULL,
+  `pm` TINYINT(4) NOT NULL,
+  `state` INTEGER(11) DEFAULT NULL,
+  `lastUpdateTime` DATETIME DEFAULT NULL,
+  `generateTime` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
   KEY `city` (`city`),
   KEY `user` (`user`),
   KEY `route` (`route`),
-  CONSTRAINT `track_fk3` FOREIGN KEY (`route`) REFERENCES `route` (`id`),
   CONSTRAINT `track_fk1` FOREIGN KEY (`city`) REFERENCES `city` (`id`),
-  CONSTRAINT `track_fk2` FOREIGN KEY (`user`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  CONSTRAINT `track_fk2` FOREIGN KEY (`user`) REFERENCES `user` (`id`),
+  CONSTRAINT `track_fk3` FOREIGN KEY (`route`) REFERENCES `route` (`id`)
+)ENGINE=InnoDB
+AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
+
+insert company values(0, '未知');
+
+insert into city(id, name) VALUES(0, '未知');
+insert into city(name) VALUES('北京');
+insert into city(name) VALUES('上海');
+insert into city(name) VALUES('深圳');
+
+/*insert into attention(user, route) values(1, 299);*/

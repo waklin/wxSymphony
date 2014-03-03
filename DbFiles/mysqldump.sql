@@ -40,6 +40,32 @@ INSERT INTO `astation` VALUES (1,'359路'),(2,'Y104路'),(3,'Y251路'),(4,'x211�
 UNLOCK TABLES;
 
 --
+-- Table structure for table `attention`
+--
+
+DROP TABLE IF EXISTS `attention`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `attention` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user` int(11) NOT NULL,
+  `route` int(11) NOT NULL,
+  `pm_morning` tinyint(4) NOT NULL DEFAULT '1',
+  `route_opp` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `attention`
+--
+
+LOCK TABLES `attention` WRITE;
+/*!40000 ALTER TABLE `attention` DISABLE KEYS */;
+/*!40000 ALTER TABLE `attention` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `category`
 --
 
@@ -50,7 +76,7 @@ CREATE TABLE `category` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `catname` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -83,7 +109,7 @@ CREATE TABLE `city` (
 
 LOCK TABLES `city` WRITE;
 /*!40000 ALTER TABLE `city` DISABLE KEYS */;
-INSERT INTO `city` VALUES (0,'未知'),(1,'北京'),(2,'上海'),(3,'广州');
+INSERT INTO `city` VALUES (0,'未知'),(1,'北京'),(2,'上海'),(3,'深圳');
 /*!40000 ALTER TABLE `city` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -267,10 +293,11 @@ CREATE TABLE `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `wxAppId` char(255) NOT NULL DEFAULT '',
   `name` char(255) DEFAULT '',
-  `city_id` int(11) NOT NULL DEFAULT '1',
+  `city` int(11) NOT NULL DEFAULT '1',
+  `joinTime` datetime NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `city_id` (`city_id`),
-  CONSTRAINT `user_fk` FOREIGN KEY (`city_id`) REFERENCES `city` (`id`)
+  KEY `city` (`city`),
+  CONSTRAINT `user_fk` FOREIGN KEY (`city`) REFERENCES `city` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -282,6 +309,42 @@ LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `track`
+--
+
+DROP TABLE IF EXISTS `track`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `track` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `city` int(11) NOT NULL,
+  `user` int(11) NOT NULL,
+  `route` int(11) NOT NULL,
+  `pm` tinyint(4) NOT NULL,
+  `state` int(11) DEFAULT NULL,
+  `lastUpdateTime` datetime DEFAULT NULL,
+  `generateTime` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `city` (`city`),
+  KEY `user` (`user`),
+  KEY `route` (`route`),
+  CONSTRAINT `track_fk1` FOREIGN KEY (`city`) REFERENCES `city` (`id`),
+  CONSTRAINT `track_fk2` FOREIGN KEY (`user`) REFERENCES `user` (`id`),
+  CONSTRAINT `track_fk3` FOREIGN KEY (`route`) REFERENCES `route` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `track`
+--
+
+LOCK TABLES `track` WRITE;
+/*!40000 ALTER TABLE `track` DISABLE KEYS */;
+/*!40000 ALTER TABLE `track` ENABLE KEYS */;
+UNLOCK TABLES;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -292,4 +355,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-02-21 17:35:10
+-- Dump completed on 2014-03-03 16:18:50

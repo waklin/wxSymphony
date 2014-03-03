@@ -23,7 +23,7 @@
 		{
 			$this->FromUserName = (string)$simpleXml->FromUserName;
 			$this->ToUserName = (string)$simpleXml->ToUserName;
-			$this->CreateTime = $simpleXml->CreateTime;
+			$this->CreateTime = date('Y-m-d H:i:s', intval((string)$simpleXml->CreateTime));
 		}
 
 		public static function loadFromXml($messageClassName, $xmlString)

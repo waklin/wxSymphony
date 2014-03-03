@@ -1,11 +1,6 @@
 ﻿<?php
-	$result = session_start();
-	xDump($result);
-	$_SESSION['favcolor'] = 'green';
-	xDump($_SESSION['favcolor']);
-
 	require_once("global.php");
-	require_once("DBAccess.php");
+	require_once(DBACCESS_MODULE_PATH . "include.php");
 
 	/**
 	 * 变量解释
@@ -14,6 +9,20 @@
 	 */
 	define("ROUTE", "route");
 	define("PM", "pm");
+
+    /**
+     * 
+     */
+    class SessionItem
+    {
+        public $_wxAppId;
+        public $_generateTime;
+        public function __construct($wxAppId)
+        {
+            $this->_wxAppId = $wxAppId;
+            $this->_generateTime = time();
+        }
+    }
 
 	/**
 	 * 指令详解
@@ -90,7 +99,7 @@
 			$responseMsg->ToUserName = $textMsg->FromUserName;
 
 			$wxAppId = $textMsg->FromUserName;
-			$sql = sprintf("select user.id, user.city_id from user"
+			$sql = sprintf("select user.id, user.city from user"
 				. " where user.wxAppId = '%s'",
 				$wxAppId
 			);
@@ -102,7 +111,7 @@
 				$row = $result->fetch_assoc();
 				xDump($row);
 				$userId = $row["id"];
-				$cityId = $row["city_id"];
+				$cityId = $row["city"];
 
 				$result->free();
 			}
@@ -119,7 +128,7 @@
 					$result = $this->remove($wxAppId, $userId);
 				}
 				else {
-					$result = $this->add($wxAppId, $userId, $cityId, $textMsg->Content);
+					$result = $this->add($wxAppId, $userId, $cityId, $textMsg->CreateTime, $textMsg->Content);
 				}
 				$responseMsg->Content = SubjectResult::ToString($result);
 			}
@@ -133,26 +142,41 @@
 		/**
 		 * 添加一条记录到track表
 		 */
-		function _insertTrack($cityId, $userId, $routeId, $pm) {
-			$sql = sprintf("insert into track(city, user, route, pm)"
-				. " values(%s, %s, %s, %s)",
+		function _insertTrack($cityId, $userId, $routeId, $pm, $time) {
+			$sql = sprintf("insert into track(city, user, route, pm, generateTime)"
+				. " values(%s, %s, %s, %s, '%s')",
 				$cityId,
 				$userId,
 				$routeId,
-				$pm
+                $pm,
+                $time
 			);
 			xDump($sql);
 			return $this->_execSql($sql);
 		}
 
+        public function _isTracking($userId) {
+            $ret = false;
+            $sql = sprintf("select * from track"
+                . " where user = %s",
+                $userId
+            );
+
+            $result = $this->_execSql($sql);
+            if ($result) {
+                $ret = $result->num_rows > 0;
+            }
+
+            return $ret;
+        }
+
 		/**
 		 * 加入一条线路追踪信息
 		 */
-		public function add($wxAppId, $userId, $cityId, $cmd) {
-			xDump($_SESSION[$wxAppId]);
-			if (isset($_SESSION[$wxAppId])) {
-				return SubjectResult::ADD_EXSITTRACK;
-			}
+		public function add($wxAppId, $userId, $cityId, $time, $cmd) {
+            if ($this->_isTracking($userId)) {
+                return SubjectResult::ADD_EXSITTRACK;
+            }
 
 			$paramStr = substr($cmd, 1);
 			xDump($paramStr);
@@ -161,8 +185,7 @@
 
 			if ($array) {
 				if ($array[ROUTE] > 0) {
-					if ($this->_insertTrack($cityId, $userId, $array[ROUTE], $array[PM])){
-						$_SESSION[$wxAppId] = $array[ROUTE];
+					if ($this->_insertTrack($cityId, $userId, $array[ROUTE], $array[PM], $time)){
 						return SubjectResult::ADD_SUCCESSFUL;
 					}
 				}
@@ -189,18 +212,17 @@
 		 * 删除一条线路追踪信息
 		 */
 		function remove($wxAppId, $userId) {
-			if (!isset($_SESSION[$wxAppId])) {
+			if (!$this->_isTracking($userId)) {
 				return SubjectResult::REMOVE_NOTRACK;
 			}
 
 			$sql = sprintf("delete from track"
-				. " where user = '%s'",
+				. " where user = %s",
 				$userId
 			);
 			xDump($sql);
 
 			if ($this->_execSql($sql)) {
-				unset($_SESSION[$wxAppId]);
 				return SubjectResult::REMOVE_SUCCESSFUL;
 			}
 		}

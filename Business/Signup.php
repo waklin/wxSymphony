@@ -1,5 +1,6 @@
 <?php 
-	require_once("DBAccess.php");
+	require_once("global.php");
+	require_once(DBACCESS_MODULE_PATH . "include.php");
 
 	/**
 	 * 关注/取消关注
@@ -17,8 +18,14 @@
 			return $this->_dbAccess->execSql($sql);
 		}
 
-		public function join($wxAppId) {
-			$sql = sprintf("INSERT INTO user(wxAppId) VALUES('%s')", $wxAppId);
+		public function join($wxAppId, $time) {
+            $sql = sprintf("INSERT INTO user(wxAppId, joinTime)"
+                . " VALUES('%s', '%s')", 
+                $wxAppId,
+                $time
+            );
+            xDump($sql);
+
 			$ret = $this->_execSql($sql);
 			if (!$ret) {
 				die(__FUNCTION__  . mysql_error());

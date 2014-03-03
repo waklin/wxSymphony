@@ -1,5 +1,4 @@
 <?php
-	require_once("DBAccess.php");
 	require_once(MESSAGES_MODULE_PATH . "include.php");
 
 	/**

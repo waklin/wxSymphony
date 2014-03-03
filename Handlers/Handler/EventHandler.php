@@ -40,7 +40,7 @@
 				else
 				{
 					$responseMsg->Content = "welcome join!";
-					$signup->join($requestEvent->FromUserName);
+					$signup->join($requestEvent->FromUserName, $requestEvent->CreateTime);
 				}
 				$result = $responseMsg->generateContent();
 			}

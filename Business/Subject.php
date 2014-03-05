@@ -223,8 +223,8 @@
 
 			$responseMsg->Content = sprintf("%s\n longitude=%s\n latitude=%s",
 				$locationMsg->Label,
-				$locationMsg->Location_X,
-				$locationMsg->Location_Y
+				$locationMsg->Location_Y,
+				$locationMsg->Location_X
 			);
 			$responseMsg->CreateTime = date('Y-m-d H:i:s', time());
 

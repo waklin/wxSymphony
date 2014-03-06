@@ -45,24 +45,49 @@ function queryOnlyOne() {
         num++;
     });
 }
-function queryAll() {
-    alert("codeAddress");
+
+var sort = 0;
+function queryOne() {
     var staList = document.getElementById("stationList");
     var locList = document.getElementById("locationList");
     var unknownList = document.getElementById("unknownList");
-    for (var i = 0, l = staList.options.length; i < l; i ++) {
-        var staName = staList.options[i].innerHTML;
-        var address = "北京,"+staName +"公交站";
-        geocoder.geocode({'address': address}, function(results, status) {
-            if (status == soso.maps.GeocoderStatus.OK) {
-                var item = results.location.toString() + results.address;
-                locList.options[locList.options.length] = new Option(num.toString() + "_" + item, num.toString());
-            } else {
-                unknownList.options[unknownList.options.length] = new Option(num.toString() + "_" + results.address, num.toString());
-            }
-            num++;
-        });
-    }
+	var staName = staList.options[sort].innerHTML;
+	var address = "北京,"+staName +"公交站";
+
+	geocoder.geocode({'address': address}, function(results, status) {
+		if (status == soso.maps.GeocoderStatus.OK) {
+			var item = results.location.toString() + results.address;
+			locList.options[locList.options.length] = new Option(sort.toString() + "_" + item, sort.toString());
+		} else {
+			var staName1 = staList.options[sort].innerHTML;
+			unknownList.options[unknownList.options.length] = new Option(sort.toString() + "_" + staName1, sort.toString());
+		}
+		sort++;
+		if (sort < staList.options.length) {
+			setTimeout("queryOne()", 10);
+		}
+	});
+}
+
+function queryAll() {
+    alert("codeAddress");
+	queryOne();
+    //var staList = document.getElementById("stationList");
+    //var locList = document.getElementById("locationList");
+    //var unknownList = document.getElementById("unknownList");
+    //for (var i = 0, l = staList.options.length; i < l; i ++) {
+        //var staName = staList.options[i].innerHTML;
+        //var address = "北京,"+staName +"公交站";
+        //geocoder.geocode({'address': address}, function(results, status) {
+            //if (status == soso.maps.GeocoderStatus.OK) {
+                //var item = results.location.toString() + results.address;
+                //locList.options[locList.options.length] = new Option(num.toString() + "_" + item, num.toString());
+            //} else {
+                //unknownList.options[unknownList.options.length] = new Option(num.toString() + "_" + results.address, num.toString());
+            //}
+            //num++;
+        //});
+    //}
 }
 function getnums() {
     var locList = document.getElementById("locationList");

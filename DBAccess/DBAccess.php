@@ -63,6 +63,7 @@
 				if ($this->_mysqli->connect_error) {
 					die(__FUNCTION__ . __LINE__ . $this->_mysqli->connect_error);
 				}
+				$this->_mysqli->query("SET NAMES 'UTF8'");
 			}
 
 			return $this->_mysqli;

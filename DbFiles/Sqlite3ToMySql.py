@@ -38,18 +38,30 @@ def transfer(sqliteConn, mysqlConn, srcTableName, dstTableName):
     mysqlConn.commit()
     mysqlCursor.close()
 
-sqliteConn = sqlite3.connect("./beijing")
+sqliteConn = sqlite3.connect("./fetchCoordinate/beijing")
 conn=MySQLdb.connect(host='127.0.0.1',user='root',passwd='811225',port=3306,charset="utf8")
 #conn.select_db("symphony")
 conn.select_db("new_db")
 
-transfer(sqliteConn, conn, "astation", "astation")
-transfer(sqliteConn, conn, "category", "category")
-transfer(sqliteConn, conn, "company", "company")
-transfer(sqliteConn, conn, "lines", "route")
-transfer(sqliteConn, conn, "coordinate", "coordinate")
-transfer(sqliteConn, conn, "estation", "estation")
-transfer(sqliteConn, conn, "station", "station")
-transfer(sqliteConn, conn, "stations", "stations")
+#transfer(sqliteConn, conn, "astation", "astation")
+#transfer(sqliteConn, conn, "category", "category")
+#transfer(sqliteConn, conn, "company", "company")
+#transfer(sqliteConn, conn, "lines", "route")
+##transfer(sqliteConn, conn, "coordinate", "coordinate")
+#transfer(sqliteConn, conn, "estation", "estation")
+#transfer(sqliteConn, conn, "station", "station")
+#transfer(sqliteConn, conn, "stations", "stations")
+
+#读取coordinatefromtecent_2文件，将每一行信息插入到coordinate表中
+f = open("coordinatefromtecent_2.txt");
+lines = f.readlines();
+for line in lines:
+    items = line.split(",")
+    mysqlCursor = conn.cursor()
+    sql = "insert into coordinate(id,longitude,latitude) values(%s,%s,%s)" % (item[0], item[3].rstrip(">").strip(), item[2].lstrip("<").strip())
+    mysqlCursor.execute(sql);
+
+    conn.commit()
+    mysqlCursor.close()
 
 conn.close()

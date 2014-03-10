@@ -35,9 +35,9 @@ while True:
         output = "json"
         #lat = 39.979165
         #lng = 116.369819
-        lat = 40.043847
-        lng = 116.330863
-        radius = 1000
+        lat = 40.049272
+        lng = 116.33748
+        radius = 1000 
         url = "/place/v2/search?q=%s&location=%s,%s&radius=%s&output=%s&ak=%s" % (toHex(query), lat, lng, radius, output, ak)
         print url
         httpConn.request("GET", url)

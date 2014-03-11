@@ -61,7 +61,10 @@ for line in lines:
     if len(item) < 5:
         continue
     mysqlCursor = conn.cursor()
-    sql = "insert into coordinate(id,longitude,latitude,type) values(%s,%s,%s,0)" % (item[0], item[3].rstrip(">").strip(), item[2].lstrip("<").strip())
+    sql = "insert into coordinate(id,longitude,latitude,type,remark) values(%s,%s,%s,0,%s)" % (item[0], 
+            item[3].rstrip(">").strip(), 
+            item[2].lstrip("<").strip(), 
+            item[4])
     mysqlCursor.execute(sql)
 
 conn.commit()

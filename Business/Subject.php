@@ -214,9 +214,9 @@
 		 */
 		public function track($locationMsg) {
 			$wxAppId = $locationMsg->FromUserName;
-			//$userInfo = $this->_getUserInfo($wxAppId);
+			$userInfo = $this->_getUserInfo($wxAppId);
 
-			$userId = 0;
+			$userId = $userInfo['id'];
 			$responseMsg = new TextMessage();
 			$responseMsg->FromUserName = $locationMsg->ToUserName;
 			$responseMsg->ToUserName = $locationMsg->FromUserName;
@@ -228,10 +228,11 @@
 			);
 			$responseMsg->CreateTime = date('Y-m-d H:i:s', time());
 
-			//if ($this->_isTracking($userId)) {
-				//// 从stations表中获取跟踪线路的站点信息
-				//// 遍历线路的站点，是否匹配locationMsg的经纬度
-			//}
+			if ($this->_isTracking($userId)) {
+				// 从stations表中获取跟踪线路的站点信息
+
+				// 遍历线路的站点，是否匹配locationMsg的经纬度
+			}
 
 			return $responseMsg->generateContent();
 		}

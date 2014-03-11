@@ -56,7 +56,8 @@ CREATE TABLE `coordinate` (
   `id` INTEGER(11) NOT NULL,
   `longitude` FLOAT(9,5) NOT NULL,
   `latitude` FLOAT(9,5) NOT NULL,
-  `type` INTEGER(11) NOT NULL
+  `type` INTEGER(11) NOT NULL,
+  `remark` VARCHAR(255) COLLATE utf8_general_ci DEFAULT NULL
 )ENGINE=InnoDB
 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
 

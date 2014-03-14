@@ -2,6 +2,7 @@
 import MySQLdb
 import sqlite3
 import sys
+import codecs
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -41,8 +42,8 @@ def transfer(sqliteConn, mysqlConn, srcTableName, dstTableName):
 sqliteConn = sqlite3.connect("./beijing")
 
 conn=MySQLdb.connect(host='127.0.0.1',user='root',passwd='811225',port=3306,charset="utf8")
-#conn.select_db("symphony")
-conn.select_db("new_db")
+conn.select_db("symphony")
+#conn.select_db("new_db")
 
 transfer(sqliteConn, conn, "astation", "astation")
 transfer(sqliteConn, conn, "category", "category")
@@ -54,14 +55,15 @@ transfer(sqliteConn, conn, "station", "station")
 transfer(sqliteConn, conn, "stations", "stations")
 
 #读取coordinatefromtecent_2文件，将每一行信息插入到coordinate表中
-f = open("./fetchCoordinate/coordinatefromtecent_2.txt")
-lines = f.readlines();
+with codecs.open("./fetchCoordinate/coordinatefromtecent_2.txt", encoding='utf-8') as f:
+    lines = f.readlines();
+
 for line in lines:
     item = line.split(",")
     if len(item) < 5:
         continue
     mysqlCursor = conn.cursor()
-    sql = "insert into coordinate(id,longitude,latitude,type,remark) values(%s,%s,%s,0,%s)" % (item[0], 
+    sql = "insert into coordinate(id,longitude,latitude,type,remark) values(%s,%s,%s,0,'%s')" % (item[0], 
             item[3].rstrip(">").strip(), 
             item[2].lstrip("<").strip(), 
             item[4])

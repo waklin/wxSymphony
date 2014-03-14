@@ -96,7 +96,7 @@
 				. " where user.wxAppId = '%s'",
 				$wxAppId
 			);
-			xDump($sql);			
+			xDump($sql);
 
 			$result = $this->_execSql($sql);
 			if ($result && $result->num_rows > 0) {
@@ -164,15 +164,22 @@
 		}
 
         public function _isTracking($userId) {
-            $ret = false;
-            $sql = sprintf("select * from track"
+			$ret = false;
+
+            $sql = sprintf("select id, route from track"
                 . " where user = %s",
                 $userId
             );
-
             $result = $this->_execSql($sql);
             if ($result) {
-                $ret = $result->num_rows > 0;
+                if ($result->num_rows > 0){
+					$row = $result->fetch_assoc();
+
+					$ret = array(
+						"trackId" => $row["id"],
+						"routeId" => $row["route"],
+					);
+				}
             }
 
             return $ret;
@@ -221,20 +228,76 @@
 			$responseMsg->FromUserName = $locationMsg->ToUserName;
 			$responseMsg->ToUserName = $locationMsg->FromUserName;
 
+			$content = NULL;
+			$trackInfo = $this->_isTracking($userId);
+			if ($trackInfo) {
+				$pm = 1;
+
+				// 从stations表中获取跟踪线路的站点信息
+				$sql = sprintf("select station.id, station.station, coordinate.longitude, coordinate.latitude"
+				    . " from stations, coordinate, station"
+					. " where stations.station = coordinate.id"
+					. " and stations.station = station.id"
+					. " and stations.routeid = %s"
+					. " and pm%d > 0"
+					. " order by pm%d",
+					$trackInfo["routeId"],
+					$pm,
+					$pm
+				);
+				xDump($sql);
+
+				$location = array(
+					'lon' => (float)($locationMsg->Location_Y),
+					'lat' => (float)($locationMsg->Location_X)
+				);
+
+				// 遍历线路的站点，是否匹配locationMsg的经纬度
+				$result = $this->_execSql($sql);
+				xDump($result);
+				while ($row = $result->fetch_assoc()) {
+					xDump($row);
+					$stationLocation = array(
+						"lon" => (float)$row["longitude"],
+						"lat" => (float)$row["latitude"]
+					);
+
+					$distance = $this->_distance($stationLocation, $location);
+					xDump($distance);
+					if ($distance < 0.002) {
+						$sql = sprintf("update track"
+							. " set state = %s"
+							. " where id = %s",
+							$row["id"],
+							$trackInfo["trackId"]
+						);
+
+						$content = "已到达:" . $row["station"];
+						
+						xDump($sql);
+						$this->_execSql($sql);
+						break;
+					}
+				}
+			}
+			if (!isset($content)) {
+				$content = "未知站点";
+			}
+
 			$responseMsg->Content = sprintf("%s\n longitude=%s\n latitude=%s",
-				$locationMsg->Label,
+				$content,
 				$locationMsg->Location_Y,
 				$locationMsg->Location_X
 			);
+
 			$responseMsg->CreateTime = date('Y-m-d H:i:s', time());
-
-			if ($this->_isTracking($userId)) {
-				// 从stations表中获取跟踪线路的站点信息
-
-				// 遍历线路的站点，是否匹配locationMsg的经纬度
-			}
-
 			return $responseMsg->generateContent();
+		}
+
+		function _distance($pt1, $pt2) {
+			$a = abs($pt1["lon"] - $pt2["lon"]);
+			$b = abs($pt1["lat"] - $pt2["lat"]);
+			return Sqrt($a * $a + $b * $b);
 		}
 
 		/**

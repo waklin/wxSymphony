@@ -69,34 +69,34 @@
 	if(defined(DEPLOY_BAE))
 		exit();
 
-    //$xmlString = "<xml>
-                //<ToUserName><![CDATA[gl]]></ToUserName>
-                //<FromUserName><![CDATA[waklin]]></FromUserName>
-                //<CreateTime>1156219870</CreateTime>
-                //<MsgType><![CDATA[text]]></MsgType>
-                //<Content><![CDATA[sq]]></Content>
-                //<FuncFlag>0</FuncFlag>
-                //</xml>";
+	//$xmlString = "<xml>
+				//<ToUserName><![CDATA[gl]]></ToUserName>
+				//<FromUserName><![CDATA[waklin]]></FromUserName>
+				//<CreateTime>1156219870</CreateTime>
+				//<MsgType><![CDATA[event]]></MsgType>
+				//<Event><![CDATA[subscribe]]></Event>
+				//</xml>";
+	
+	//$xmlString = "<xml>
+				//<ToUserName><![CDATA[gl]]></ToUserName>
+				//<FromUserName><![CDATA[waklin]]></FromUserName>
+				//<CreateTime>1156219870</CreateTime>
+				//<MsgType><![CDATA[text]]></MsgType>
+				//<Content><![CDATA[s425]]></Content>
+				//<FuncFlag>0</FuncFlag>
+				//</xml>";
 
 	$xmlString = "<xml>
-				<ToUserName><![CDATA[toUser]]></ToUserName>
-				<FromUserName><![CDATA[fromUser]]></FromUserName>
+				<ToUserName><![CDATA[gl]]></ToUserName>
+				<FromUserName><![CDATA[waklin]]></FromUserName>
 				<CreateTime>1351776360</CreateTime>
 				<MsgType><![CDATA[location]]></MsgType>
-				<Location_X>23.134521</Location_X>
-				<Location_Y>113.358803</Location_Y>
+				<Location_X>39.980348</Location_X>
+				<Location_Y>116.368154</Location_Y>
 				<Scale>20</Scale>
 				<Label><![CDATA[位置信息]]></Label>
 				<MsgId>1234567890123456</MsgId>
 				</xml>";
-
-    //$xmlString = "<xml>
-                //<ToUserName><![CDATA[gl]]></ToUserName>
-                //<FromUserName><![CDATA[waklin]]></FromUserName>
-                //<CreateTime>1156219870</CreateTime>
-                //<MsgType><![CDATA[event]]></MsgType>
-                //<Event><![CDATA[subscribe]]></Event>
-                //</xml>";
 
 	$handler = HandlerFactory::createHandler($xmlString);
 	$child = $handler->handleRequest();

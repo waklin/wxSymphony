@@ -86,33 +86,48 @@
 				//<FuncFlag>0</FuncFlag>
 				//</xml>";
 
+	//$xmlString = "<xml>
+				//<ToUserName><![CDATA[gl]]></ToUserName>
+				//<FromUserName><![CDATA[waklin]]></FromUserName>
+				//<CreateTime>1351776360</CreateTime>
+				//<MsgType><![CDATA[location]]></MsgType>
+				//<Location_X>39.980348</Location_X>
+				//<Location_Y>116.368154</Location_Y>
+				//<Scale>20</Scale>
+				//<Label><![CDATA[位置信息]]></Label>
+				//<MsgId>1234567890123456</MsgId>
+				//</xml>";
+	
 	$xmlString = "<xml>
 				<ToUserName><![CDATA[gl]]></ToUserName>
 				<FromUserName><![CDATA[waklin]]></FromUserName>
-				<CreateTime>1351776360</CreateTime>
-				<MsgType><![CDATA[location]]></MsgType>
-				<Location_X>39.980348</Location_X>
-				<Location_Y>116.368154</Location_Y>
-				<Scale>20</Scale>
-				<Label><![CDATA[位置信息]]></Label>
-				<MsgId>1234567890123456</MsgId>
+				<CreateTime>1156219870</CreateTime>
+				<MsgType><![CDATA[text]]></MsgType>
+				<Content><![CDATA[h]]></Content>
+				<FuncFlag>0</FuncFlag>
 				</xml>";
 
-	$handler = HandlerFactory::createHandler($xmlString);
-	$child = $handler->handleRequest();
-	$child = Semaphore::loadFromXml("TextMessage", $child);
+/*
+ *    $handler = HandlerFactory::createHandler($xmlString);
+ *    $child = $handler->handleRequest();
+ *    $child = Semaphore::loadFromXml("TextMessage", $child);
+ *
+ *    echo($child->ToUserName);
+ *    echo("<br>");
+ *
+ *    echo($child->FromUserName);
+ *    echo("<br>");
+ *
+ *    echo($child->Content);
+ *    echo("<br>");
+ *
+ *    echo($child->MsgType);
+ *    echo("<br>");
+ */
 
-	echo($child->ToUserName);
-	echo("<br>");
-
-	echo($child->FromUserName);
-	echo("<br>");
-
-	echo($child->Content);
-	echo("<br>");
-
-	echo($child->MsgType);
-	echo("<br>");
+	 $handler = HandlerFactory::createHandler($xmlString);
+	 $child = $handler->handleRequest();
+	 echo($child);
 
 	/*
 	 *echo($child->generateContent());

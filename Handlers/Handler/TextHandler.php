@@ -15,18 +15,24 @@
 		public function handleRequest()
 		{
 			$textMessage = Semaphore::loadFromXml("TextMessage", $this->_requestString);
-
-			/*
-			$temp = $textMessage->ToUserName;
-			$textMessage->ToUserName = $textMessage->FromUserName;
-			$textMessage->FromUserName = $temp;
-			$textMessage->Content = "i love you too!";
-
-			return $textMessage->generateContent();
-			 */
-
 			$cmd = substr(trim($textMessage->Content), 0, 1);
-			if ($cmd == "s") {
+
+			if ($cmd == "h") {
+				$newsMsg = new NewsMessage();
+
+				$art = new Article();
+				$art->Title = "帮助";
+				$art->Description = "描述";
+				$art->PicUrl = null;
+				$art->Url = "www.baidu.com";
+				$newsMsg->addArticle($art);
+
+				$newsMsg->FromUserName = $textMessage->ToUserName;
+				$newsMsg->ToUserName= $textMessage->FromUserName;
+				$newsMsg->CreateTime = date('Y-m-d H:i:s', time());
+				return $newsMsg->generateContent();
+			}
+			else if ($cmd == "s") {
 				$subject = new Subject();
 				return $subject->perform($textMessage);
 			}

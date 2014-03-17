@@ -112,7 +112,7 @@
 
 		/**
 		 * 处理文本消息
-		 * 如果s后跟着q，那么调用remove，否则调用remove
+		 * 如果s后跟着q，那么调用remove，否则调用add
 		 */
 		public function perform($textMsg) {
 			$responseMsg = new TextMessage();
@@ -163,6 +163,10 @@
 			return $this->_execSql($sql);
 		}
 
+		/**
+			* 用户是否追踪线路
+			* return false/['trackId', 'routeId']
+		 */
         public function _isTracking($userId) {
 			$ret = false;
 

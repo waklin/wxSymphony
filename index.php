@@ -103,31 +103,29 @@
 				<FromUserName><![CDATA[waklin]]></FromUserName>
 				<CreateTime>1156219870</CreateTime>
 				<MsgType><![CDATA[text]]></MsgType>
-				<Content><![CDATA[h]]></Content>
+				<Content><![CDATA[s]]></Content>
 				<FuncFlag>0</FuncFlag>
 				</xml>";
 
-/*
- *    $handler = HandlerFactory::createHandler($xmlString);
- *    $child = $handler->handleRequest();
- *    $child = Semaphore::loadFromXml("TextMessage", $child);
- *
- *    echo($child->ToUserName);
- *    echo("<br>");
- *
- *    echo($child->FromUserName);
- *    echo("<br>");
- *
- *    echo($child->Content);
- *    echo("<br>");
- *
- *    echo($child->MsgType);
- *    echo("<br>");
- */
+	$handler = HandlerFactory::createHandler($xmlString);
+	$child = $handler->handleRequest();
+	$child = Semaphore::loadFromXml("TextMessage", $child);
 
-	 $handler = HandlerFactory::createHandler($xmlString);
-	 $child = $handler->handleRequest();
-	 echo($child);
+	echo($child->ToUserName);
+	echo("<br>");
+
+	echo($child->FromUserName);
+	echo("<br>");
+
+	echo($child->Content);
+	echo("<br>");
+
+	echo($child->MsgType);
+	echo("<br>");
+
+	 //$handler = HandlerFactory::createHandler($xmlString);
+	 //$child = $handler->handleRequest();
+	 //echo($child);
 
 	/*
 	 *echo($child->generateContent());

@@ -24,13 +24,6 @@
         }
     }
 
-	/**
-	 * 指令详解
-	 * s[线路名称] 追踪指定线路
-	 * s 追踪唯attention中唯一的线路
-	 * s[q]	退出追踪
-	 */
-
 	class SubjectResult
 	{
 		const UNKNOWN_USER = 1;
@@ -79,6 +72,10 @@
 
 	/**
 	 * 线路追踪类
+	 *
+	 * 追踪: {s [线路名称|q]} 
+	 *			[线路名称]:	追踪指定的线路, 没有指定线路意味着追踪attention中唯一的线路
+	 *			[q]:		退出追踪
 	 */
 	class Subject
 	{
@@ -204,6 +201,18 @@
 
 			if ($array) {
 				if ($array[ROUTE] > 0) {
+					$pm = intval($array[PM]);
+					$date = intval(date('H',time()));
+					xDump($date);
+					if (date > 12) {
+						if ($pm == 1) {
+							$pm = 2;
+						}
+						else if ($pm == 2) {
+							$pm = 1;
+						}
+					}
+
 					if ($this->_insertTrack($cityId, $userId, $array[ROUTE], $array[PM], $time)){
 						return SubjectResult::ADD_SUCCESSFUL;
 					}

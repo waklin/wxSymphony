@@ -103,7 +103,7 @@
 				<FromUserName><![CDATA[waklin]]></FromUserName>
 				<CreateTime>1156219870</CreateTime>
 				<MsgType><![CDATA[text]]></MsgType>
-				<Content><![CDATA[s]]></Content>
+				<Content><![CDATA[ls]]></Content>
 				<FuncFlag>0</FuncFlag>
 				</xml>";
 

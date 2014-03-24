@@ -1,6 +1,7 @@
 ﻿<?php
 	require_once("global.php");
 	require_once(DBACCESS_MODULE_PATH . "include.php");
+	require_once(BUSINESS_MODULE_PATH. "common.php");
 
 	/**
 	 * 变量解释
@@ -47,9 +48,6 @@
 			case self::ADD_MULTIATTENTION:
 				$str = "so much attention.";
 				break;
-			case self::ADD_SUCCESSFUL:
-				$str = "add track successful.";
-				break;
 			case self::ADD_EXSITTRACK:
 				$str = "you have a track already, please send [sq] to quit.";
 				break;
@@ -57,10 +55,10 @@
 				$str = "unknown user.";
 				break;
 			case self::REMOVE_SUCCESSFUL:
-				$str = "remove track successful.";
+				$str = "你已经退出跟踪的线路，祝你工作生活愉快。";
 				break;
 			case self::REMOVE_NOTRACK:
-				$str = "you have not track any route.";
+				$str = "你还没有跟踪任何线路。";
 				break;
 			default:
 				$str = "unknown result.";
@@ -86,27 +84,6 @@
 			$this->_dbAccess = new DBAccess();
 		}
 
-		private function _getUserInfo($wxAppId) {
-			$ret = array();
-
-			$sql = sprintf("select user.id, user.city from user"
-				. " where user.wxAppId = '%s'",
-				$wxAppId
-			);
-			xDump($sql);
-
-			$result = $this->_execSql($sql);
-			if ($result && $result->num_rows > 0) {
-				$row = $result->fetch_assoc();
-				xDump($row);
-				$ret["id"] = $row["id"];
-				$ret["city"] = $row["city"];
-				$result->free();
-			}
-
-			return $ret;
-		}
-
 		/**
 		 * 处理文本消息
 		 * 如果s后跟着q，那么调用remove，否则调用add
@@ -117,7 +94,7 @@
 			$responseMsg->ToUserName = $textMsg->FromUserName;
 
 			$wxAppId = $textMsg->FromUserName;
-			$userInfo = $this->_getUserInfo($wxAppId);
+			$userInfo = BusinessCommand::GetUserInfo($wxAppId);
 			$userId = $userInfo["id"];
 			$cityId = $userInfo["city"];
 
@@ -135,7 +112,12 @@
 				else {
 					$result = $this->add($wxAppId, $userId, $cityId, $textMsg->CreateTime, $textMsg->Content);
 				}
-				$responseMsg->Content = SubjectResult::ToString($result);
+				if (is_string($result)) {
+					$responseMsg->Content = $result;
+				}
+				else{
+					$responseMsg->Content = SubjectResult::ToString($result);
+				}
 			}
 
 			$responseMsg->CreateTime = date('Y-m-d H:i:s', time());
@@ -156,29 +138,31 @@
                 $pm,
                 $time
 			);
-			xDump($sql);
-			return $this->_execSql($sql);
+			return BusinessCommand::ExecSql($sql);
 		}
 
 		/**
 			* 用户是否追踪线路
-			* return false/['trackId', 'routeId']
+			* return false/['trackId', 'routeId', "linename"]
 		 */
         public function _isTracking($userId) {
 			$ret = false;
-
-            $sql = sprintf("select id, route from track"
-                . " where user = %s",
+			$sql = sprintf("select track.id, track.route, route.linename"
+			    . " from track,route"
+				. " where track.route = route.id"
+                . " and user = %s",
                 $userId
             );
+
             $result = $this->_execSql($sql);
             if ($result) {
                 if ($result->num_rows > 0){
 					$row = $result->fetch_assoc();
 
 					$ret = array(
-						"trackId" => $row["id"],
-						"routeId" => $row["route"],
+						"track" => $row["id"],
+						"route" => $row["route"],
+						"linename" => $row["linename"],
 					);
 				}
             }
@@ -190,35 +174,38 @@
 		 * 加入一条线路追踪信息
 		 */
 		public function add($wxAppId, $userId, $cityId, $time, $cmd) {
-            if ($this->_isTracking($userId)) {
-                return SubjectResult::ADD_EXSITTRACK;
-            }
+			$trackInfo = $this->_isTracking($userId);
+            if ($trackInfo) {
+				$content = sprintf("你正在跟踪%s\n"
+					. "请先发送文字消息 [sq] 退出当前跟踪的线路。",
+					$trackInfo["linename"]
+				);
+
+				return $content;
+			}
 
 			$paramStr = substr($cmd, 1);
 			xDump($paramStr);
-			$array = $this->_parseCmdForAdd($userId, $paramStr);
-			xDump($array);
+			$attentions = $this->_parseCmdForAdd($userId, $paramStr);
 
-			if ($array) {
-				if ($array[ROUTE] > 0) {
-					$pm = intval($array[PM]);
-					$date = intval(date('H',time()));
-					xDump($date);
-					if (date > 12) {
-						if ($pm == 1) {
-							$pm = 2;
-						}
-						else if ($pm == 2) {
-							$pm = 1;
-						}
-					}
+			if (!empty($attentions)) {
+				if (count($attentions) == 1) {
+					$attentionInfo = BusinessCommand::FetchAttentionInfo($attentions[0], $time);
+					if ($this->_insertTrack($cityId, $userId, $attentionInfo["route"], $attentionInfo["pm"], $time)){
+						$content = sprintf("感谢你参与跟踪%s\n"
+							. "%s\n"
+							. "       ↓\n"
+							. "%s\n"
+							. SPLITLINE
+							. "现在你可以发送位置消息，上报抵达的站点(本订阅号暂不支持自动获取用户位置，每抵达一个站点都需要你发送位置信息)。",
 
-					if ($this->_insertTrack($cityId, $userId, $array[ROUTE], $array[PM], $time)){
-						return SubjectResult::ADD_SUCCESSFUL;
+							$attentionInfo["linename"],
+							$attentionInfo["departure"],
+							$attentionInfo["arrival"]
+						);
+
+						return $content;
 					}
-				}
-				else if ($array[ROUTE] == 0) {
-					return SubjectResult::ADD_NOATTENTION;
 				}
 				else {
 					return SubjectResult::ADD_MULTIATTENTION;
@@ -234,7 +221,7 @@
 		 */
 		public function track($locationMsg) {
 			$wxAppId = $locationMsg->FromUserName;
-			$userInfo = $this->_getUserInfo($wxAppId);
+			$userInfo = BusinessCommand::GetUserInfo($wxAppId);
 
 			$userId = $userInfo['id'];
 			$responseMsg = new TextMessage();
@@ -254,7 +241,7 @@
 					. " and stations.routeid = %s"
 					. " and pm%d > 0"
 					. " order by pm%d",
-					$trackInfo["routeId"],
+					$trackInfo["route"],
 					$pm,
 					$pm
 				);
@@ -282,7 +269,7 @@
 							. " set state = %s"
 							. " where id = %s",
 							$row["id"],
-							$trackInfo["trackId"]
+							$trackInfo["track"]
 						);
 
 						$content = "已到达:" . $row["station"];
@@ -317,7 +304,8 @@
 		 * 删除一条线路追踪信息
 		 */
 		function remove($wxAppId, $userId) {
-			if (!$this->_isTracking($userId)) {
+			$trackInfo = $this->_isTracking($userId);
+			if ($trackInfo === false) {
 				return SubjectResult::REMOVE_NOTRACK;
 			}
 
@@ -325,10 +313,13 @@
 				. " where user = %s",
 				$userId
 			);
-			xDump($sql);
 
 			if ($this->_execSql($sql)) {
-				return SubjectResult::REMOVE_SUCCESSFUL;
+				$content = sprintf("你已经退出跟踪%s"
+					. "感谢你的付出，祝你工作生活愉快。",
+					$trackInfo["linename"]
+				);
+				return $content;
 			}
 		}
 
@@ -346,23 +337,15 @@
 		 *   $paramStr s后的字符串
 		 *
 		 * return 
-		 *   1. 数组[route, pm] 
-		 *     route -1:多条关注线路 0:没有找到指定的线路 >0:线路的id
-		 *     pm 方向
-		 *   2. null 没有关注任何线路
+		 *   attention表的id数组
 		 */
 		function _parseCmdForAdd($userId, $paramStr) {
-			$array = array(
-				ROUTE => 0,
-				PM => 1
-			);
-
-			$lineName = null;
-			if (strlen($paramStr) > 0) {
+			if (strlen(trim($paramStr)) > 0) {
 				$lineName = trim($paramStr);
 			}
 
-			$sql = sprintf("select route.id, route.linename"
+			// 查询用户关注的所有线路
+			$sql = sprintf("select attention.id, route.linename"
 				. " from route, attention, user"
 				. " where user.id = attention.user"
 				. " and attention.route = route.id"
@@ -370,55 +353,27 @@
 				$userId
 			);
 
-			xDump($sql);
-
-			$result = $this->_execSql($sql);
+			$result = BusinessCommand::ExecSql($sql);
 			$num = $result->num_rows;
 			if ($num > 0) {
+				$attentions = array();
 				if (isset($lineName)) {		// s [线路名称]
-					$matchTimes = 0;
-					while ($row=$result->fetch_assoc()) {
+					while ($row = $result->fetch_assoc()) {
 						$match = strstr($row["linename"], $lineName);
 						if ($match) {
-							$array[ROUTE] = $row["id"];
-							$matchTimes++;
+							$attentions[] = $row["id"];
 						}
 					}
-
-					if ($matchTimes == 0) {		// 没有匹配到关注线路
-						$array[ROUTE] = 0;
-					}
-					else if ($matchTimes > 1) {	// 匹配到多个相似的线路
-						$array[ROUTE] = -1;
+				}
+				else {
+					while ($row = $result->fetch_assoc()) {
+						$attentions[] = $row["id"];
 					}
 				}
-				else {	// s
-					if ($num == 1) {
-						$row=$result->fetch_assoc();
-						$array["route"] = $row["id"];
-					}
-					else {
-						$array["route"] = -1;
-					}
-				}
-				$result->free();
 			}
-			else {
-				// 没有追踪任何线路
-				return null;
-			}
+			$result->free();
 
-			return $array;
-		}
-
-		public function untrack($textMsg) {
-			// 从track表中删除用户的track记录
-		}
-
-		public function updateLocation($locationMsg) {
-			// 根据locationMsg寻找指定的站点，并更新track表
-			// 更新成功提示成功更新站点信息
-			// 失败提示更新站点失败的原因(未找到此站点)
+			return $attentions;
 		}
 	}
 ?>

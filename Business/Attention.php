@@ -21,6 +21,7 @@
 		const LS_NOATTENTION_LINE = 201;
 
 		const AR_SUCCESSFUL = 0;
+		const AR_FAILD = 0;
 
 		public static function ToString($result) {
 			$str = "";
@@ -33,6 +34,15 @@
 				break;
 			case self::ADD_UNKNOWN_PM:
 				$str = "关注线路失败[无效的清晨乘车方向]。";
+				break;
+			case self::ADD_UNKNOWN_RETURNLINE:
+				$str = "关注线路失败[无效的返程线路名称]。";
+				break;
+			case self::ADD_AMBIGUOUS_RETURNLINE:
+				$str = "关注线路失败[发现多条相似的返程线路，请进一步明确返程线路名称]。";
+				break;
+			case self::ADD_NOTCIRCLE_RETURNLINE:
+				$str = "关注线路失败[返程线路必须是对应的外环/内环线路]。";
 				break;
 			case self::ADD_INVALIDPARAM:
 				$str = "关注线路失败[指令参数不全]。";
@@ -110,8 +120,7 @@
 		}
 
 		function _getLineInfo($lineName) {
-			$array = NULL;
-
+			$array = array();
 			// 线路是否唯一
 			$sql = sprintf("select id,linename,linetime from route"
 				. " where linename like '%%%s%%'",
@@ -136,7 +145,6 @@
 		}
 
 		function _add($cmd, $userInfo) {
-			// body...
 			$params = explode(" ", trim($cmd));
 			if (count($params) < 2) {
 				return AttentionResult::ADD_INVALIDPARAM;
@@ -146,7 +154,7 @@
 			$lineInfos = $this->_getLineInfo($lineName);
 
 			// 线路是否存在
-			if (!$lineInfos) {
+			if (empty($lineInfos)) {
 				return AttentionResult::ADD_UNKNOWN_LINE;
 			}
 
@@ -155,7 +163,6 @@
 				return AttentionResult::ADD_AMBIGUOUS_LINE;
 			}
 
-			$sql = "";
 			// 线路是否环线
 			$isCircle = $lineInfos[0]["circle"];
 			if (!$isCircle) {
@@ -163,28 +170,63 @@
 				if ($pm != 1 && $pm !=2) {
 					return AttentionResult::ADD_UNKNOWN_PM;	
 				}
-				$sql = sprintf("delete from attention"
-					. " where user = %s"
-					. " and route = %s",
-					$userInfo["id"],
-					$lineInfos[0]["id"]
-				);
-				BusinessCommand::ExecSql($sql);
-
-				$sql = sprintf("insert into attention(user,route,pm_morning,route_opp)"
-					. " values(%s,%s,%d,%d)",					
-					$userInfo["id"],
-					$lineInfos[0]["id"],
-					$pm,
-					0
-					);
+				$route_opp = 0;
 			}
 			else {
-				;
+				$pm = 3;
+				$lineName_opp = trim($params[1]);
+				$lineInfos_opp = $this->_getLineInfo($lineName_opp);
+				// 线路是否存在
+				if (empty($lineInfos_opp)) {
+					return AttentionResult::ADD_UNKNOWN_RETURNLINE;
+				}
+
+				// 线路是否唯一
+				if (count($lineInfos_opp) > 1) {
+					return AttentionResult::ADD_AMBIGUOUS_RETURNLINE;
+				}
+
+				if (!$lineInfos_opp[0]["circle"]) {
+					return AttentionResult::ADD_NOTCIRCLE_RETURNLINE;
+				}
+
+				$route_opp = $lineInfos_opp[0]["id"];
 			}
+
+			// 删除相同线路的关注记录
+			$sql = sprintf("delete from attention"
+				. " where user = %s"
+				. " and route = %s",
+				$userInfo["id"],
+				$lineInfos[0]["id"]
+			);
 			BusinessCommand::ExecSql($sql);
 
-			return AttentionResult::ADD_SUCCESSFUL;
+			$sql = sprintf("insert into attention(user,route,pm_morning,route_opp)"
+				. " values(%s,%s,%d,%d)",					
+				$userInfo["id"],
+				$lineInfos[0]["id"],
+				$pm,
+				$route_opp
+			);
+
+			if (!BusinessCommand::ExecSql($sql)){
+				return AttentionResult::AR_FAILD;
+			}
+
+			$attentionId = BusinessCommand::GetLastInsertId();
+			$attentionInfo = BusinessCommand::FetchAttentionInfo($attentionId, "2014-03-24 07:00:00");
+			$content = sprintf("关注%s成功"
+				. "清晨乘车线路方向"
+				. "%s"
+				. DOWNARROW
+				. "%s",
+				$attentionInfo["linename"],
+				$attentionInfo["departure"],
+				$attentionInfo["arrival"]
+			);
+
+			return $content;
 		}
 
 		function _rm($cmd, $userInfo)
@@ -225,12 +267,9 @@
 			return AttentionResult::RM_SUCCESSFUL;
 		}
 
-		function _ls($userInfo) {
-			$ret = AttentionResult::AR_SUCCESSFUL;
-
-			$sql = sprintf("select route.linetime, route.linename, attention.pm_morning from attention,route"
-				. " where attention.route = route.id"
-				. " and attention.user = %s",
+		function _ls($userInfo, $time) {
+			$sql = sprintf("select attention.id from attention"
+				. " where attention.user = %s",
 				$userInfo["id"]
 			);
 
@@ -239,32 +278,25 @@
 				return AttentionResult::LS_NOATTENTION_LINE;
 			}
 			else{
-				$content = "";
+				$n = 0;
 				while ($row = $result->fetch_assoc()) {
-					$pm = intval($row["pm_morning"]);
-					if ($pm > 0) {
-						$split = explode("|", $row["linetime"]);
-						if ($pm == 1) {
-							$geton = $split[0];
-							$getoff = $split[1];
-						}
-						else{
-							$geton = $split[1];
-							$getoff = $split[0];
-						}
-						$item = sprintf("%s\n%s\n↓\n%s\n",
-							$row["linename"],
-							$geton,
-							$getoff
-						);
+					$attentionInfo = BusinessCommand::FetchAttentionInfo($row["id"], $time);
+					$item = sprintf("%s\n"
+						. "清晨线路方向\n"
+						. "%s\n"
+						. DOWNARROW
+						. "%s\n",
+						$attentionInfo["linename"],
+						$attentionInfo["departure"],
+						$attentionInfo["arrival"]
+					);
+
+					if ($n > 0) {
+						$content = $content . SPLITLINE;
 					}
-					else {
-						$item = sprintf("%s\n%s\n",
-							$row["linename"],
-							$row["linetime"]
-						);
-					}
-					$content = $content . $item . "--------------------------";
+					$content = $content . $item;
+
+					$n = $n + 1;
 				}
 
 				return $content;

@@ -218,9 +218,7 @@
 			$attentionInfo = BusinessCommand::FetchAttentionInfo($attentionId, "2014-03-24 07:00:00");
 			$content = sprintf("关注%s成功"
 				. "清晨乘车线路方向"
-				. "%s"
-				. DOWNARROW
-				. "%s",
+				. "[%s]" . RIGHTARROW . "[%s]",
 				$attentionInfo["linename"],
 				$attentionInfo["departure"],
 				$attentionInfo["arrival"]
@@ -282,10 +280,8 @@
 				while ($row = $result->fetch_assoc()) {
 					$attentionInfo = BusinessCommand::FetchAttentionInfo($row["id"], $time);
 					$item = sprintf("%s\n"
-						. "清晨线路方向\n"
-						. "%s\n"
-						. DOWNARROW
-						. "%s\n",
+						. "清晨乘车线路方向\n"
+						. "[%s]" . RIGHTARROW . "[%s]",
 						$attentionInfo["linename"],
 						$attentionInfo["departure"],
 						$attentionInfo["arrival"]

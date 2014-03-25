@@ -1,19 +1,4 @@
 <?php
-	//session_start();
-	//$pg_uuid = 'ac606826-9620-490b-b850-ea9dbce6cfd5';
-	//if (!isset($_SESSION[$pg_uuid])) {
-		//$_SESSION[$pg_uuid] = 4;
-	//}
-	//else {
-		//$_SESSION[$pg_uuid] += 1;
-	//}
-	//var_dump($_SESSION);
-
-	//if ($_SESSION[$pg_uuid] == 6) {
-		//unset($_SESSION[$pg_uuid]);
-	//}
-	//exit;
-
 	require_once("global.php");
 	require_once(MESSAGES_MODULE_PATH . "include.php");
 	require_once(HANDLERS_MODULE_PATH . "include.php");
@@ -103,7 +88,7 @@
 				<FromUserName><![CDATA[waklin]]></FromUserName>
 				<CreateTime>1156219870</CreateTime>
 				<MsgType><![CDATA[text]]></MsgType>
-				<Content><![CDATA[ls]]></Content>
+				<Content><![CDATA[1]]></Content>
 				<FuncFlag>0</FuncFlag>
 				</xml>";
 

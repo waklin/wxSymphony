@@ -19,31 +19,32 @@
 
 		public function query()
 		{
-			$db = new DBAccess();
 			$lineName = $this->_requestMsg->Content;
-			$sql = sprintf("select linename,linetime from route where linename like '%%%s%%'", $lineName);
-			$result = $db->execSql($sql);
+			$lines = BusinessCommand::QueryLine($lineName);
 
-			$num = $result->num_rows;
-			if ($num > 0) {
+			if (!empty($lines)) {
 				$content = "";
-				while ($row = $result->fetch_assoc()) {
-
+				$n = 0;
+				foreach ($lines as $line) {
 					$item = "";
-					$pos = strpos($row["linetime"], "|");
+					$pos = strpos($line["linetime"], "|");
 					if ($pos === false) {
 						$item = sprintf("%s\n%s\n", 
-							$row["linename"],
-							"③ " . $row["linetime"]);
+							$line["linename"],
+							"③ " . $line["linetime"]);
 					}
 					else {
-						$split = explode("|", $row["linetime"]);
+						$split = explode("|", $line["linetime"]);
 						$item = sprintf("%s\n%s\n%s\n", 
-							$row["linename"],
+							$line["linename"],
 							"① " . $split[0],
 							"② " . $split[1]);
 					}
-					$content = $content . $item . "--------------------------";
+					if ($n > 0) {
+						$content = $content . SPLITLINE;
+					}
+					$content = $content . $item;
+					$n = $n + 1;
 				}
 
 				$textMessage = new TextMessage();

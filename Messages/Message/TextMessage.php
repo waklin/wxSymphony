@@ -17,7 +17,7 @@
 		{
 			parent::readPlusNode($simpleXml);
 
-			$this->Content = $simpleXml->Content;
+			$this->Content = (string)$simpleXml->Content;
 		}
 
 		public function generateContent()

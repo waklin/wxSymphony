@@ -2,8 +2,8 @@
 	require_once("global.php");
 	require_once(DBACCESS_MODULE_PATH . "include.php");
 
-	define("SPLITLINE", "----------------\n");
-	define("DOWNARROW", "        ↓\n");
+	define("SPLITLINE", "--------------------------\n");
+	define("RIGHTARROW", "→");
 	
 	/**
 	 * 
@@ -52,8 +52,36 @@
 		}
 
 		/**
-		 * 关注线路时，关注成功后，获取出发->达到的信息
-		 * 跟踪线路时，根据当前时间，调整pm（往返）/route（环线），跟踪成功后，获取出发->到达的信息
+		 * 查询线路信息
+	     * return: array["route", "linename", "linetime"]
+		 */
+		public static function QueryLine($lineName) {
+			if (ctype_digit($lineName)) {
+				$sql = sprintf("select id, linename,linetime from route where number = %s", $lineName);
+			}
+			else {
+				$sql = sprintf("select id, linename,linetime from route where linename like '%%%s%%'", $lineName);
+			}
+
+			$lines = array();
+			$result = BusinessCommand::ExecSql($sql);
+			while ($row = $result->fetch_assoc()) {
+				$line = array(
+					"route" => $row["id"],
+					"linename" => $row["linename"],
+					"linetime" => $row["linetime"],
+				);
+				$lines[] = $line;
+			}
+
+			return $lines;
+		}
+
+		/**
+		 * 获取关注线路的信息 
+		 * param $attention attention's id
+		 * param $time 时间
+		 * return array[]["route", "linename", "pm", "departure", "arrival"]
 		 */
 		public static function FetchAttentionInfo($attention, $time) {
 			$sql = sprintf("select route.linetime, route.linename, attention.route, attention.pm_morning, attention.route_opp"

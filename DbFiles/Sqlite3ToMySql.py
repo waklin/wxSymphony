@@ -8,9 +8,15 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 def transfer(sqliteConn, mysqlConn, srcTableName, dstTableName):
+    mysqlCursor = mysqlConn.cursor()
+    sql = "select * from %s" % dstTableName
+    mysqlCursor.execute(sql)
+    columns = [i[0] for i in mysqlCursor.description]
+    fmtStr = ",".join(columns)
+
     # 从sqlite中读取数据放到list对象
     sqliteCursor = sqliteConn.cursor()
-    sqliteCursor.execute("select * from %s" % srcTableName)
+    sqliteCursor.execute("select %s from %s" % (fmtStr, srcTableName))
     rows = []
     while True:
         row =sqliteCursor.fetchone()
@@ -18,10 +24,6 @@ def transfer(sqliteConn, mysqlConn, srcTableName, dstTableName):
             rows.append(row)
         else:
             break
-
-    mysqlCursor = mysqlConn.cursor()
-    ts = ["%s"] * len(rows[0])
-    fmtStr = ",".join(ts)
 
     sql = "insert %s values(%s)" % (dstTableName, fmtStr)
     print sql

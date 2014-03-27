@@ -22,8 +22,6 @@ def transfer(sqliteConn, mysqlConn, srcTableName, dstTableName):
     mysqlCursor = mysqlConn.cursor()
     ts = ["%s"] * len(rows[0])
     fmtStr = ",".join(ts)
-    #sql = "delete from %s" % dstTableName
-    #mysqlCursor.execute(sql)
 
     sql = "insert %s values(%s)" % (dstTableName, fmtStr)
     print sql
@@ -39,8 +37,15 @@ def transfer(sqliteConn, mysqlConn, srcTableName, dstTableName):
     mysqlConn.commit()
     mysqlCursor.close()
 
-sqliteConn = sqlite3.connect("./beijing")
+# 导入城市数据
+def importCity(cityDb, mysqlConn):
+    sqliteConn = sqlite3.connect("./beijing")
+    transfer(sqliteConn, conn, "lines", "route")
+    transfer(sqliteConn, conn, "station", "station")
+    transfer(sqliteConn, conn, "stations", "stations")
 
+    
+sqliteConn = sqlite3.connect("./beijing")
 conn=MySQLdb.connect(host='127.0.0.1',user='root',passwd='811225',port=3306,charset="utf8")
 conn.select_db("symphony")
 #conn.select_db("new_db")

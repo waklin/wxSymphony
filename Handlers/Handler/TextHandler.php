@@ -42,6 +42,10 @@
 
 				return $txtMsg->generateContent();
 			}
+			else if ($firstChr == "o") {
+				$obs = new Observe();
+				return $obs->perform($textMessage);
+			}
 			else if ($firstChr == "a" || $firstChr == "r" || $firstChr == "l") {
 				$attention = new Attention();
 				return $attention->perform($textMessage);

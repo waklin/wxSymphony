@@ -19,36 +19,16 @@ CREATE TABLE `user` (
 )ENGINE=InnoDB
 AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
 
-CREATE TABLE `category` (
-  `id` INTEGER(11) NOT NULL AUTO_INCREMENT,
-  `catname` VARCHAR(255) COLLATE utf8_general_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
-)ENGINE=InnoDB
-AUTO_INCREMENT=22 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
-
-CREATE TABLE `company` (
-  `id` INTEGER(11) NOT NULL AUTO_INCREMENT,
-  `company` VARCHAR(100) COLLATE utf8_general_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
-)ENGINE=InnoDB
-AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
-
 CREATE TABLE `route` (
   `id` INTEGER(11) NOT NULL AUTO_INCREMENT,
   `linename` VARCHAR(200) COLLATE utf8_general_ci NOT NULL DEFAULT '',
   `linetime` VARCHAR(200) COLLATE utf8_general_ci NOT NULL DEFAULT '',
   `lastupdate` DATE NOT NULL,
-  `category` INTEGER(11) NOT NULL,
-  `company` INTEGER(11) NOT NULL,
   `type` INTEGER(11) NOT NULL,
   `note` VARCHAR(1024) COLLATE utf8_general_ci NOT NULL DEFAULT '',
   `fare` VARCHAR(200) COLLATE utf8_general_ci NOT NULL DEFAULT '',
   `number` INTEGER(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `category` (`category`),
-  KEY `company` (`company`),
-  CONSTRAINT `route_fk1` FOREIGN KEY (`company`) REFERENCES `company` (`id`),
-  CONSTRAINT `route_fk` FOREIGN KEY (`category`) REFERENCES `category` (`id`)
+  PRIMARY KEY (`id`)
 )ENGINE=InnoDB
 AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
 
@@ -68,20 +48,6 @@ CREATE TABLE `station` (
 )ENGINE=InnoDB
 AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
 
-CREATE TABLE `astation` (
-  `id` INTEGER(11) NOT NULL AUTO_INCREMENT,
-  `astation` VARCHAR(255) COLLATE utf8_general_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
-)ENGINE=InnoDB
-AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
-
-CREATE TABLE `estation` (
-  `id` INTEGER(11) NOT NULL AUTO_INCREMENT,
-  `estation` VARCHAR(255) COLLATE utf8_general_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
-)ENGINE=InnoDB
-AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
-
 CREATE TABLE `stations` (
   `id` INTEGER(11) NOT NULL AUTO_INCREMENT,
   `pm1` INTEGER(11) NOT NULL,
@@ -89,8 +55,6 @@ CREATE TABLE `stations` (
   `pm3` INTEGER(11) NOT NULL,
   `routeid` INTEGER(11) NOT NULL,
   `station` INTEGER(11) NOT NULL,
-  `astation` INTEGER(11) NOT NULL,
-  `estation` INTEGER(11) NOT NULL,
   `other` VARCHAR(255) COLLATE utf8_general_ci DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `routeid` (`routeid`),
@@ -116,7 +80,7 @@ CREATE TABLE `track` (
   `user` INTEGER(11) NOT NULL,
   `route` INTEGER(11) NOT NULL,
   `pm` TINYINT(4) NOT NULL,
-  `state` INTEGER(11) DEFAULT NULL,
+  `station` INTEGER(11) DEFAULT NULL,
   `lastUpdateTime` DATETIME DEFAULT NULL,
   `generateTime` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
@@ -128,8 +92,6 @@ CREATE TABLE `track` (
   CONSTRAINT `track_fk3` FOREIGN KEY (`route`) REFERENCES `route` (`id`)
 )ENGINE=InnoDB
 AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
-
-insert company values(0, '未知');
 
 insert into city(id, name) VALUES(0, '未知');
 insert into city(name) VALUES('北京');

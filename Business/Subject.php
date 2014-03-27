@@ -121,8 +121,6 @@
 			}
 
 			$responseMsg->CreateTime = date('Y-m-d H:i:s', time());
-			xDump($responseMsg);
-
 			return $responseMsg->generateContent();
 		}
 
@@ -184,8 +182,7 @@
 				return $content;
 			}
 
-			$paramStr = substr($cmd, 1);
-			xDump($paramStr);
+			$paramStr = trim(substr($cmd, 1));
 			$attentions = $this->_parseCmdForAdd($userId, $paramStr);
 
 			if (!empty($attentions)) {
@@ -193,10 +190,7 @@
 					$attentionInfo = BusinessCommand::FetchAttentionInfo($attentions[0], $time);
 					if ($this->_insertTrack($cityId, $userId, $attentionInfo["route"], $attentionInfo["pm"], $time)){
 						$content = sprintf("感谢你参与跟踪%s\n"
-							. "%s\n"
-							. "       ↓\n"
-							. "%s\n"
-							. SPLITLINE
+							. "[%s]" . RIGHTARROW . "[%s]\n"
 							. "现在你可以发送位置消息，上报抵达的站点(本订阅号暂不支持自动获取用户位置，每抵达一个站点都需要你发送位置信息)。",
 
 							$attentionInfo["linename"],

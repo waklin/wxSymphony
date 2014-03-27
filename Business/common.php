@@ -81,7 +81,7 @@
 		 * 获取关注线路的信息 
 		 * param $attention attention's id
 		 * param $time 时间
-		 * return array[]["route", "linename", "pm", "departure", "arrival"]
+		 * return array["route", "linename", "pm", "departure", "arrival"]
 		 */
 		public static function FetchAttentionInfo($attention, $time) {
 			$sql = sprintf("select route.linetime, route.linename, attention.route, attention.pm_morning, attention.route_opp"

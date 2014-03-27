@@ -83,14 +83,16 @@
 				//<MsgId>1234567890123456</MsgId>
 				//</xml>";
 	
-	$xmlString = "<xml>
+	$xmlString = sprintf("<xml>
 				<ToUserName><![CDATA[gl]]></ToUserName>
 				<FromUserName><![CDATA[waklin]]></FromUserName>
-				<CreateTime>1156219870</CreateTime>
+				<CreateTime>%s</CreateTime>
 				<MsgType><![CDATA[text]]></MsgType>
-				<Content><![CDATA[1]]></Content>
+				<Content><![CDATA[o]]></Content>
 				<FuncFlag>0</FuncFlag>
-				</xml>";
+				</xml>",
+				time()
+			);
 
 	$handler = HandlerFactory::createHandler($xmlString);
 	$child = $handler->handleRequest();

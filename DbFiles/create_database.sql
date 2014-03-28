@@ -28,7 +28,10 @@ CREATE TABLE `route` (
   `note` VARCHAR(1024) COLLATE utf8_general_ci NOT NULL DEFAULT '',
   `fare` VARCHAR(200) COLLATE utf8_general_ci NOT NULL DEFAULT '',
   `number` INTEGER(11) NOT NULL,
-  PRIMARY KEY (`id`)
+  `city` INTEGER(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `city` (`city`),
+  CONSTRAINT `route_fk` FOREIGN KEY (`city`) REFERENCES `city` (`id`)
 )ENGINE=InnoDB
 AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
 
@@ -44,7 +47,10 @@ CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
 CREATE TABLE `station` (
   `id` INTEGER(11) NOT NULL AUTO_INCREMENT,
   `station` VARCHAR(255) COLLATE utf8_general_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
+  `city` INTEGER(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `city` (`city`),
+  CONSTRAINT `station_fk` FOREIGN KEY (`city`) REFERENCES `city` (`id`)
 )ENGINE=InnoDB
 AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
 
@@ -53,13 +59,13 @@ CREATE TABLE `stations` (
   `pm1` INTEGER(11) NOT NULL,
   `pm2` INTEGER(11) NOT NULL,
   `pm3` INTEGER(11) NOT NULL,
-  `routeid` INTEGER(11) NOT NULL,
+  `lineid` INTEGER(11) NOT NULL,
   `station` INTEGER(11) NOT NULL,
   `other` VARCHAR(255) COLLATE utf8_general_ci DEFAULT '',
   PRIMARY KEY (`id`),
-  KEY `routeid` (`routeid`),
+  KEY `lineid` (`lineid`),
   KEY `station` (`station`),
-  CONSTRAINT `stations_fk` FOREIGN KEY (`routeid`) REFERENCES `route` (`id`),
+  CONSTRAINT `stations_fk` FOREIGN KEY (`lineid`) REFERENCES `route` (`id`),
   CONSTRAINT `stations_fk1` FOREIGN KEY (`station`) REFERENCES `station` (`id`)
 )ENGINE=InnoDB
 AUTO_INCREMENT=1 CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';

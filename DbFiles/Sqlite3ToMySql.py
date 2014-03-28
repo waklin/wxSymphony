@@ -7,12 +7,19 @@ import codecs
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-def transfer(sqliteConn, mysqlConn, srcTableName, dstTableName):
+def transfer(sqliteConn, mysqlConn, srcTableName, dstTableName, baseNo, ids, cityNo = 0):
     mysqlCursor = mysqlConn.cursor()
     sql = "select * from %s" % dstTableName
     mysqlCursor.execute(sql)
+
     columns = [i[0] for i in mysqlCursor.description]
-    fmtStr = ",".join(columns)
+    columnsCopy = [i for i in columns if i != "city"]
+
+    l = range(0, len(columnsCopy))
+    for i in l:
+        if columnsCopy[i] in ids:
+            columnsCopy[i] = "%s + %d" % (columnsCopy[i], baseNo)
+    fmtStr = ",".join(columnsCopy)
 
     # 从sqlite中读取数据放到list对象
     sqliteCursor = sqliteConn.cursor()
@@ -21,13 +28,15 @@ def transfer(sqliteConn, mysqlConn, srcTableName, dstTableName):
     while True:
         row =sqliteCursor.fetchone()
         if row != None:
-            rows.append(row)
+            rowList = [i for i in row]
+            if "city" in columns:
+                rowList.insert(columns.index("city"), cityNo)
+            rows.append(rowList)
         else:
             break
 
+    fmtStr = ",".join(["%s"] * len(columns))
     sql = "insert %s values(%s)" % (dstTableName, fmtStr)
-    print sql
-    
     while True:
         if len(rows) > 1000:
             mysqlCursor.executemany(sql, rows[:1000])
@@ -36,48 +45,24 @@ def transfer(sqliteConn, mysqlConn, srcTableName, dstTableName):
             mysqlCursor.executemany(sql, rows)
             break
 
-    mysqlConn.commit()
-    mysqlCursor.close()
+    mysqlConn.commit();
 
 # 导入城市数据
-def importCity(cityDb, mysqlConn):
-    sqliteConn = sqlite3.connect("./beijing")
-    transfer(sqliteConn, conn, "lines", "route")
-    transfer(sqliteConn, conn, "station", "station")
-    transfer(sqliteConn, conn, "stations", "stations")
+def importCity(cityDb, mysqlConn, baseNo, cityNo):
+    sqliteConn = sqlite3.connect(cityDb)
+    ids = ["id"]    #值需要在加上baseNo的字段名称
+    transfer(sqliteConn, conn, "station", "station", baseNo, ids, cityNo)
+    transfer(sqliteConn, conn, "lines", "route", baseNo, ids, cityNo)
+    ids = ["id", "station", "lineid"]
+    transfer(sqliteConn, conn, "stations", "stations", baseNo, ids)
 
-    
-sqliteConn = sqlite3.connect("./beijing")
+    sqliteConn.close()
+
 conn=MySQLdb.connect(host='127.0.0.1',user='root',passwd='811225',port=3306,charset="utf8")
-conn.select_db("symphony")
-#conn.select_db("new_db")
+#conn.select_db("symphony")
+conn.select_db("new_db")
 
-transfer(sqliteConn, conn, "astation", "astation")
-transfer(sqliteConn, conn, "category", "category")
-transfer(sqliteConn, conn, "company", "company")
-transfer(sqliteConn, conn, "lines", "route")
-#transfer(sqliteConn, conn, "coordinate", "coordinate")
-transfer(sqliteConn, conn, "estation", "estation")
-transfer(sqliteConn, conn, "station", "station")
-transfer(sqliteConn, conn, "stations", "stations")
-
-#读取coordinatefromtecent_2文件，将每一行信息插入到coordinate表中
-with codecs.open("./fetchCoordinate/coordinatefromtecent_2.txt", encoding='utf-8') as f:
-    lines = f.readlines();
-
-for line in lines:
-    item = line.split(",")
-    if len(item) < 5:
-        continue
-    mysqlCursor = conn.cursor()
-    sql = "insert into coordinate(id,longitude,latitude,type,remark) values(%s,%s,%s,0,'%s')" % (item[0], 
-            item[3].rstrip(">").strip(), 
-            item[2].lstrip("<").strip(), 
-            item[4])
-    mysqlCursor.execute(sql)
+#importCity("./beijing", conn, 100000, 1)
+importCity("./beijing", conn, 200000, 2)
 
 conn.commit()
-mysqlCursor.close()
-
-sqliteConn.close()
-conn.close()

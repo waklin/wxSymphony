@@ -119,31 +119,6 @@
 			return $responseMsg->generateContent();
 		}
 
-		function _getLineInfo($lineName) {
-			$array = array();
-			// 线路是否唯一
-			$sql = sprintf("select id,linename,linetime from route"
-				. " where linename like '%%%s%%'",
-				$lineName
-			);
-
-			$result = BusinessCommand::ExecSql($sql);
-			if ($result->num_rows > 0) {
-				$array = array();
-				while ($row = $result->fetch_assoc()) {
-					$item = array(
-						"id"=> $row["id"],
-						"linename" => $row["linename"],
-						"linetime" => $row["linetime"],
-						"circle" => !(strpos($row["linetime"], "|")),
-						);
-					$array[] = $item;
-				}
-			}
-
-			return $array;
-		}
-
 		function _add($cmd, $userInfo) {
 			$params = explode(" ", trim($cmd));
 			if (count($params) < 2) {
@@ -151,7 +126,7 @@
 			}
 
 			$lineName = trim($params[0]);
-			$lineInfos = $this->_getLineInfo($lineName);
+			$lineInfos = BusinessCommand::QueryLine($userInfo["city"], $lineName);
 
 			// 线路是否存在
 			if (empty($lineInfos)) {
@@ -175,7 +150,7 @@
 			else {
 				$pm = 3;
 				$lineName_opp = trim($params[1]);
-				$lineInfos_opp = $this->_getLineInfo($lineName_opp);
+				$lineInfos_opp = BusinessCommand::QueryLine($userInfo["city"], $lineName_opp);
 				// 线路是否存在
 				if (empty($lineInfos_opp)) {
 					return AttentionResult::ADD_UNKNOWN_RETURNLINE;
@@ -230,7 +205,7 @@
 		function _rm($cmd, $userInfo)
 		{
 			$lineName = trim($cmd);
-			$lineInfos = $this->_getLineInfo($lineName);
+			$lineInfos = BusinessCommand::QueryLine($userInfo["city"], $lineName);
 			xDump(!isset($lineInfos));
 
 			// 线路是否存在

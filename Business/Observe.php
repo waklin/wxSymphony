@@ -19,17 +19,19 @@
 		public function perform($textMsg) {
 			$userInfo = BusinessCommand::GetUserInfo($textMsg->FromUserName);
 			$sql = sprintf("select id from attention"
-				. " where user = '%s'",
+				. " where user = %s",
 				$userInfo["id"]
 			);
+			xDump($sql);
+			
 
 			$content = "";
-			$result = BusinessCommand::ExecSql($sql);
-			while ($row = $result->fetch_assoc()) {
+			$sqlResult = BusinessCommand::ExecSql($sql);
+			while ($row = $sqlResult->fetch_assoc()) {
 				$attention = BusinessCommand::FetchAttentionInfo($row["id"], $textMsg->CreateTime);
 				$sql = sprintf("select station.station, count(station.station), max(track.lastUpdateTime)"
 				    . " from track, route, station"
-					. " where track.state = station.id"
+					. " where track.station = station.id"
 					. " and track.route = route.id"
 					. " and track.route = %s"
 					. " and track.pm = %s"
@@ -39,7 +41,9 @@
 					$attention["pm"]
 				);
 
+				xDump($sql);
 				$result = BusinessCommand::ExecSql($sql);
+				
 				$arrivalInfos = array();
 				while ($row = $result->fetch_row()) {
 					$item = array(
@@ -49,7 +53,6 @@
 					);
 					$arrivalInfos[] = $item;
 				}
-				xDump($arrivalInfos);
 
 				if (!empty($arrivalInfos)) {
 					foreach ($arrivalInfos as $info) {
@@ -71,7 +74,6 @@
 					$attention["arrival"],
 					$infos
 				);
-				xDump($lineInfo);
 
 				$content = $content . $lineInfo;
 			}

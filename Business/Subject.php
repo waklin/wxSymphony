@@ -227,12 +227,12 @@
 			if ($trackInfo) {
 				$pm = 1;
 
-				// 从stations表中获取跟踪线路的站点信息
+				// 从stations表中获取跟踪线路的全部站点信息
 				$sql = sprintf("select station.id, station.station, coordinate.longitude, coordinate.latitude"
 				    . " from stations, coordinate, station"
 					. " where stations.station = coordinate.id"
 					. " and stations.station = station.id"
-					. " and stations.routeid = %s"
+					. " and stations.lineid= %s"
 					. " and pm%d > 0"
 					. " order by pm%d",
 					$trackInfo["route"],

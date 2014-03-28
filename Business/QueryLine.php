@@ -19,8 +19,11 @@
 
 		public function query()
 		{
+			$wxAppId = $this->_requestMsg->FromUserName;
+			$userInfo = BusinessCommand::GetUserInfo($wxAppId);
+
 			$lineName = $this->_requestMsg->Content;
-			$lines = BusinessCommand::QueryLine($lineName);
+			$lines = BusinessCommand::QueryLine($userInfo["city"], $lineName);
 
 			if (!empty($lines)) {
 				$content = "";

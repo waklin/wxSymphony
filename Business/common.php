@@ -55,21 +55,24 @@
 		 * 查询线路信息
 	     * return: array["route", "linename", "linetime"]
 		 */
-		public static function QueryLine($lineName) {
+		public static function QueryLine($cityId, $lineName) {
 			if (ctype_digit($lineName)) {
-				$sql = sprintf("select id, linename,linetime from route where number = %s", $lineName);
+				$sql = sprintf("select id, linename,linetime from route where number = %s and city = %s", 
+					$lineName, $cityId);
 			}
 			else {
-				$sql = sprintf("select id, linename,linetime from route where linename like '%%%s%%'", $lineName);
+				$sql = sprintf("select id, linename,linetime from route where linename like '%%%s%%' and city=%s", 
+					$lineName, $cityId);
 			}
 
 			$lines = array();
 			$result = BusinessCommand::ExecSql($sql);
 			while ($row = $result->fetch_assoc()) {
 				$line = array(
-					"route" => $row["id"],
+					"id" => $row["id"],
 					"linename" => $row["linename"],
 					"linetime" => $row["linetime"],
+					"circle" => !(strpos($row["linetime"], "|")),
 				);
 				$lines[] = $line;
 			}
@@ -123,7 +126,6 @@
 				}
 			}
 
-			xDump($pm);
 			if ($pm == 3) {
 				$departure = $linetime;
 				$arrival = $linetime;
